@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Misar Systems | مصر سيستمز - النسخة النهائية مع رفع الصور</title>
+    <title>Misar Systems | مصر سيستمز - النسخة النهائية مع خيارات الحساب المتعددة</title>
     <meta name="theme-color" content="#1a237e">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -818,7 +818,7 @@
             gap: 8px;
         }
 
-        /* ========== شاشة الملف الشخصي ========== */
+        /* ========== شاشة الملف الشخصي (محسنة) ========== */
         .profile-header {
             background: linear-gradient(135deg, #1a237e, #0d47a1);
             padding: 30px 20px;
@@ -939,6 +939,18 @@
         .menu-arrow {
             color: #999;
             font-size: 1.2rem;
+        }
+        /* عناصر مميزة في القائمة */
+        .menu-item.danger .menu-icon {
+            background: linear-gradient(135deg, #ff6d00, #ff9100);
+            color: white;
+        }
+        .menu-item.danger .menu-text {
+            color: #ff6d00;
+        }
+        .menu-item.warning .menu-icon {
+            background: linear-gradient(135deg, #ffb74d, #ff9800);
+            color: white;
         }
 
         /* ========== شاشة تعديل الملف الشخصي ========== */
@@ -1928,7 +1940,7 @@
             <div class="services-list" id="servicesList"></div>
         </div>
 
-        <!-- شاشة الملف الشخصي -->
+        <!-- شاشة الملف الشخصي (محسنة) -->
         <div class="screen hidden" id="profileScreen">
             <div class="app-header">
                 <div class="header-content">
@@ -1948,15 +1960,20 @@
                 <div class="stat-card"><div class="stat-value">0</div><div class="stat-label">نقاط</div></div>
             </div>
             <div class="profile-menu">
+                <!-- عناصر القائمة الأساسية -->
                 <a href="#" class="menu-item" onclick="showScreen('ordersScreen')"><div class="menu-icon"><i class="fas fa-shopping-bag"></i></div><div class="menu-text">طلباتي</div><i class="fas fa-chevron-left menu-arrow"></i></a>
                 <a href="#" class="menu-item" onclick="showScreen('walletScreen')"><div class="menu-icon"><i class="fas fa-wallet"></i></div><div class="menu-text">المحفظة الإلكترونية</div><i class="fas fa-chevron-left menu-arrow"></i></a>
-                <!-- زر لوحة البائع - يظهر فقط للبائعين -->
                 <a href="#" class="menu-item" id="sellerDashboardMenuItem" style="display:none;" onclick="showScreen('sellerDashboardScreen')"><div class="menu-icon"><i class="fas fa-store"></i></div><div class="menu-text">لوحة البائع</div><i class="fas fa-chevron-left menu-arrow"></i></a>
                 <a href="#" class="menu-item" onclick="openLocationSettings()"><div class="menu-icon"><i class="fas fa-map-marker-alt"></i></div><div class="menu-text">تغيير المنطقة</div><i class="fas fa-chevron-left menu-arrow"></i></a>
-                <a href="#" class="menu-item"><div class="menu-icon"><i class="fas fa-heart"></i></div><div class="menu-text">المفضلة</div><i class="fas fa-chevron-left menu-arrow"></i></a>
-                <a href="#" class="menu-item" onclick="showScreen('settingsScreen')"><div class="menu-icon"><i class="fas fa-cog"></i></div><div class="menu-text">الإعدادات</div><i class="fas fa-chevron-left menu-arrow"></i></a>
+                <a href="#" class="menu-item" onclick="showScreen('editProfileScreen')"><div class="menu-icon"><i class="fas fa-user-edit"></i></div><div class="menu-text">تعديل الملف الشخصي</div><i class="fas fa-chevron-left menu-arrow"></i></a>
+                <!-- قسم الحساب (خيارات متعددة) -->
+                <div style="margin: 20px 0 10px; color:#1a237e; font-weight:700;">إعدادات الحساب</div>
+                <a href="#" class="menu-item" onclick="showChangePasswordModal()"><div class="menu-icon"><i class="fas fa-key"></i></div><div class="menu-text">تغيير كلمة المرور</div><i class="fas fa-chevron-left menu-arrow"></i></a>
+                <a href="#" class="menu-item" onclick="showSecurityModal()"><div class="menu-icon"><i class="fas fa-shield-alt"></i></div><div class="menu-text">إعدادات الأمان</div><i class="fas fa-chevron-left menu-arrow"></i></a>
+                <!-- خيارات تسجيل الخروج -->
+                <a href="#" class="menu-item warning" onclick="switchAccount()"><div class="menu-icon"><i class="fas fa-exchange-alt"></i></div><div class="menu-text">تبديل الحساب</div><i class="fas fa-chevron-left menu-arrow"></i></a>
+                <a href="#" class="menu-item danger" id="logoutMenuItem" style="display:none;" onclick="confirmLogout()"><div class="menu-icon"><i class="fas fa-sign-out-alt"></i></div><div class="menu-text">تسجيل الخروج</div><i class="fas fa-chevron-left menu-arrow"></i></a>
                 <a href="#" class="menu-item" id="loginMenuItem" onclick="showScreen('loginScreen')"><div class="menu-icon"><i class="fas fa-sign-in-alt"></i></div><div class="menu-text">تسجيل الدخول</div><i class="fas fa-chevron-left menu-arrow"></i></a>
-                <a href="#" class="menu-item" id="logoutMenuItem" style="display:none;" onclick="logout()"><div class="menu-icon"><i class="fas fa-sign-out-alt"></i></div><div class="menu-text">تسجيل الخروج</div><i class="fas fa-chevron-left menu-arrow"></i></a>
             </div>
         </div>
 
@@ -1980,7 +1997,38 @@
             </div>
         </div>
 
-        <!-- لوحة البائع المحسنة -->
+        <!-- مودال تغيير كلمة المرور (وهمي) -->
+        <div id="changePasswordModal" class="modal" onclick="if(event.target===this) closeModal('changePasswordModal')">
+            <div class="modal-content">
+                <h3 style="color:#1a237e; margin-bottom:15px;">تغيير كلمة المرور</h3>
+                <div class="input-group"><label class="input-label">كلمة المرور الحالية</label><input type="password" id="oldPassword" class="input-field" placeholder="أدخل كلمة المرور الحالية"></div>
+                <div class="input-group"><label class="input-label">كلمة المرور الجديدة</label><input type="password" id="newPassword" class="input-field" placeholder="أدخل كلمة المرور الجديدة"></div>
+                <div class="input-group"><label class="input-label">تأكيد كلمة المرور الجديدة</label><input type="password" id="confirmNewPassword" class="input-field" placeholder="أعد إدخال كلمة المرور الجديدة"></div>
+                <div style="display:flex; gap:10px; margin-top:20px;">
+                    <button class="login-btn" style="flex:1;" onclick="changePassword()">تغيير</button>
+                    <button class="google-btn" style="flex:1;" onclick="closeModal('changePasswordModal')">إلغاء</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- مودال إعدادات الأمان (وهمي) -->
+        <div id="securityModal" class="modal" onclick="if(event.target===this) closeModal('securityModal')">
+            <div class="modal-content">
+                <h3 style="color:#1a237e; margin-bottom:15px;">إعدادات الأمان</h3>
+                <p style="margin-bottom:20px;">يمكنك تفعيل المصادقة الثنائية لحماية حسابك.</p>
+                <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:20px;">
+                    <span>المصادقة الثنائية</span>
+                    <label class="switch"><input type="checkbox" id="twoFactorCheck"><span class="slider round"></span></label>
+                </div>
+                <p style="color:#666; font-size:0.9rem;">عند التفعيل، سيتم إرسال رمز إلى هاتفك عند كل تسجيل دخول.</p>
+                <div style="display:flex; gap:10px; margin-top:20px;">
+                    <button class="login-btn" style="flex:1;" onclick="saveSecuritySettings()">حفظ</button>
+                    <button class="google-btn" style="flex:1;" onclick="closeModal('securityModal')">إغلاق</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- لوحة البائع المحسنة (مختصرة للاختصار، ولكنها موجودة في الكود الكامل) -->
         <div class="screen hidden" id="sellerDashboardScreen">
             <div class="app-header">
                 <div class="header-content">
@@ -1998,24 +2046,17 @@
                     </div>
                 </div>
             </div>
-
-            <!-- إحصائيات -->
             <div class="seller-stats">
                 <div class="stat-card"><div class="stat-value" id="sellerProductCount">0</div><div class="stat-label">المنتجات</div></div>
                 <div class="stat-card"><div class="stat-value" id="sellerOrderCount">0</div><div class="stat-label">الطلبات</div></div>
                 <div class="stat-card"><div class="stat-value" id="sellerRevenue">0 ج.م</div><div class="stat-label">المبيعات</div></div>
             </div>
-
-            <!-- تبويبات -->
             <div class="seller-tabs">
                 <div class="seller-tab active" onclick="switchSellerTab('products')"><i class="fas fa-box"></i> المنتجات</div>
                 <div class="seller-tab" onclick="switchSellerTab('orders')"><i class="fas fa-shopping-cart"></i> الطلبات</div>
                 <div class="seller-tab" onclick="switchSellerTab('analytics')"><i class="fas fa-chart-line"></i> الإحصائيات</div>
             </div>
-
-            <!-- محتوى التبويبات -->
             <div class="seller-content">
-                <!-- تبويب المنتجات -->
                 <div id="sellerProductsTab">
                     <div class="search-box"><i class="fas fa-search"></i><input type="text" id="sellerProductSearch" placeholder="ابحث عن منتج..." oninput="filterSellerProducts()"></div>
                     <div class="filter-buttons" id="productCategoryFilters">
@@ -2029,8 +2070,6 @@
                     </div>
                     <div class="product-management" id="sellerProductsList"></div>
                 </div>
-
-                <!-- تبويب الطلبات -->
                 <div id="sellerOrdersTab" style="display:none;">
                     <div class="search-box"><i class="fas fa-search"></i><input type="text" id="sellerOrderSearch" placeholder="ابحث عن طلب..." oninput="filterSellerOrders()"></div>
                     <div class="filter-buttons">
@@ -2042,8 +2081,6 @@
                     </div>
                     <div class="orders-list" id="sellerOrdersList"></div>
                 </div>
-
-                <!-- تبويب الإحصائيات -->
                 <div id="sellerAnalyticsTab" style="display:none;">
                     <div style="background:white; border-radius:18px; padding:20px; box-shadow:0 4px 15px rgba(0,0,0,0.05);">
                         <h3 style="color:#1a237e; margin-bottom:15px;">إحصائيات متقدمة</h3>
@@ -2058,7 +2095,6 @@
                     </div>
                 </div>
             </div>
-
             <!-- مودال إضافة/تعديل المنتج -->
             <div id="productModal" class="modal" onclick="if(event.target===this) closeProductModal()">
                 <div class="modal-content">
@@ -2067,49 +2103,15 @@
                     <div class="input-group"><label class="input-label">السعر (ج.م)</label><input type="number" id="productPrice" class="input-field" placeholder="0.00" step="0.01"></div>
                     <div class="input-group"><label class="input-label">الكمية المتاحة</label><input type="number" id="productStock" class="input-field" placeholder="0" value="1"></div>
                     <div class="input-group"><label class="input-label">الوصف</label><textarea id="productDescription" class="input-field" placeholder="وصف المنتج" rows="3"></textarea></div>
-                    <div class="input-group">
-                        <label class="input-label">التصنيف</label>
-                        <select id="productCategory" class="input-field">
-                            <option value="">اختر التصنيف</option>
-                            <option value="electronics">إلكترونيات</option>
-                            <option value="fashion">أزياء</option>
-                            <option value="home">منزل</option>
-                            <option value="food">أطعمة</option>
-                            <option value="beauty">جمال وعناية</option>
-                            <option value="sports">رياضة</option>
-                        </select>
-                    </div>
-                    <div class="input-group">
-                        <label class="input-label">صورة المنتج</label>
-                        <input type="file" id="productImage" accept="image/*" onchange="previewImage(event)">
-                        <div class="image-preview" id="imagePreview"></div>
-                        <small style="color:#666; display:block; margin-top:5px;">الحد الأقصى 5 ميجابايت. الصيغ المسموحة: JPG, PNG, GIF, WEBP</small>
-                    </div>
-                    <div class="input-group" id="discountGroup">
-                        <label class="input-label">نسبة الخصم (%)</label>
-                        <input type="number" id="productDiscount" class="input-field" placeholder="0" min="0" max="100">
-                    </div>
+                    <div class="input-group"><label class="input-label">التصنيف</label><select id="productCategory" class="input-field"><option value="">اختر التصنيف</option><option value="electronics">إلكترونيات</option><option value="fashion">أزياء</option><option value="home">منزل</option><option value="food">أطعمة</option><option value="beauty">جمال وعناية</option><option value="sports">رياضة</option></select></div>
+                    <div class="input-group"><label class="input-label">صورة المنتج</label><input type="file" id="productImage" accept="image/*" onchange="previewImage(event)"><div class="image-preview" id="imagePreview"></div><small style="color:#666; display:block; margin-top:5px;">الحد الأقصى 5 ميجابايت. الصيغ المسموحة: JPG, PNG, GIF, WEBP</small></div>
+                    <div class="input-group" id="discountGroup"><label class="input-label">نسبة الخصم (%)</label><input type="number" id="productDiscount" class="input-field" placeholder="0" min="0" max="100"></div>
                     <input type="hidden" id="editingProductId" value="">
-                    <div style="display:flex; gap:10px; margin-top:20px;">
-                        <button class="login-btn" style="flex:1;" onclick="saveProduct()">حفظ</button>
-                        <button class="google-btn" style="flex:1;" onclick="closeProductModal()">إلغاء</button>
-                    </div>
+                    <div style="display:flex; gap:10px; margin-top:20px;"><button class="login-btn" style="flex:1;" onclick="saveProduct()">حفظ</button><button class="google-btn" style="flex:1;" onclick="closeProductModal()">إلغاء</button></div>
                 </div>
             </div>
-
-            <!-- مودال تفاصيل الطلب وتغيير الحالة -->
-            <div id="orderModal" class="modal" onclick="if(event.target===this) closeOrderModal()">
-                <div class="modal-content">
-                    <h3 style="color:#1a237e; margin-bottom:15px;">تفاصيل الطلب</h3>
-                    <div id="orderDetails"></div>
-                    <div style="margin-top:15px;">
-                        <label class="input-label">تغيير الحالة:</label>
-                        <select id="orderStatusSelect" class="input-field"></select>
-                        <button class="login-btn" style="margin-top:10px;" onclick="updateOrderStatus()">تحديث الحالة</button>
-                    </div>
-                    <button class="google-btn" style="margin-top:10px;" onclick="closeOrderModal()">إغلاق</button>
-                </div>
-            </div>
+            <!-- مودال تفاصيل الطلب -->
+            <div id="orderModal" class="modal" onclick="if(event.target===this) closeOrderModal()"><div class="modal-content"><h3 style="color:#1a237e; margin-bottom:15px;">تفاصيل الطلب</h3><div id="orderDetails"></div><div style="margin-top:15px;"><label class="input-label">تغيير الحالة:</label><select id="orderStatusSelect" class="input-field"></select><button class="login-btn" style="margin-top:10px;" onclick="updateOrderStatus()">تحديث الحالة</button></div><button class="google-btn" style="margin-top:10px;" onclick="closeOrderModal()">إغلاق</button></div></div>
         </div>
 
         <!-- زر المساعد الذكي -->
@@ -2278,7 +2280,9 @@
             }
         }
 
-        async function logout() {
+        // دالة تسجيل الخروج المحسنة مع تأكيد
+        async function logout(showConfirm = true) {
+            if (showConfirm && !confirm('هل أنت متأكد من تسجيل الخروج؟')) return;
             showLoading(true);
             const { error } = await supabaseClient.auth.signOut();
             showLoading(false);
@@ -2292,6 +2296,18 @@
                 showScreen('homeScreen');
                 showToast('تم تسجيل الخروج', 'success');
             }
+        }
+
+        // دالة تبديل الحساب (تسجيل الخروج وفتح شاشة الدخول)
+        async function switchAccount() {
+            if (appState.user) {
+                await logout(false); // تسجيل الخروج بدون تأكيد
+            }
+            showScreen('loginScreen');
+        }
+
+        function confirmLogout() {
+            logout(true);
         }
 
         function toggleLoginMenu(isLoggedIn) {
@@ -2976,6 +2992,7 @@
             displaySellerProducts(search);
         }
 
+        // إضافة مستمعي الأحداث لتصفية المنتجات في لوحة البائع
         document.querySelectorAll('#productCategoryFilters .filter-btn').forEach(btn => {
             btn.addEventListener('click', function() {
                 document.querySelectorAll('#productCategoryFilters .filter-btn').forEach(b => b.classList.remove('active'));
@@ -3022,6 +3039,7 @@
             displaySellerOrders(search);
         }
 
+        // إضافة مستمعي الأحداث لتصفية الطلبات في لوحة البائع
         document.querySelectorAll('#sellerOrdersTab .filter-btn').forEach(btn => {
             btn.addEventListener('click', function() {
                 document.querySelectorAll('#sellerOrdersTab .filter-btn').forEach(b => b.classList.remove('active'));
@@ -3217,6 +3235,54 @@
             link.href = URL.createObjectURL(blob);
             link.download = 'orders.csv';
             link.click();
+        }
+
+        // ========== دوال الحساب الإضافية (وهمية) ==========
+        function showChangePasswordModal() {
+            if (!appState.user) {
+                showToast('يجب تسجيل الدخول أولاً', 'warning');
+                return;
+            }
+            document.getElementById('changePasswordModal').classList.add('active');
+        }
+
+        function showSecurityModal() {
+            if (!appState.user) {
+                showToast('يجب تسجيل الدخول أولاً', 'warning');
+                return;
+            }
+            document.getElementById('securityModal').classList.add('active');
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('active');
+        }
+
+        function changePassword() {
+            const oldPass = document.getElementById('oldPassword').value;
+            const newPass = document.getElementById('newPassword').value;
+            const confirmPass = document.getElementById('confirmNewPassword').value;
+            if (!oldPass || !newPass || !confirmPass) {
+                showToast('يرجى ملء جميع الحقول', 'warning');
+                return;
+            }
+            if (newPass !== confirmPass) {
+                showToast('كلمة المرور الجديدة غير متطابقة', 'error');
+                return;
+            }
+            // هنا يمكن إضافة استدعاء حقيقي لتغيير كلمة المرور عبر Supabase
+            showToast('تم تغيير كلمة المرور (وهمي)', 'success');
+            closeModal('changePasswordModal');
+            // إعادة تعيين الحقول
+            document.getElementById('oldPassword').value = '';
+            document.getElementById('newPassword').value = '';
+            document.getElementById('confirmNewPassword').value = '';
+        }
+
+        function saveSecuritySettings() {
+            const twoFactor = document.getElementById('twoFactorCheck').checked;
+            showToast(`تم حفظ إعدادات الأمان (المصادقة الثنائية: ${twoFactor ? 'مفعلة' : 'غير مفعلة'})`, 'success');
+            closeModal('securityModal');
         }
 
         // ========== دوال التنقل بين الشاشات ==========
@@ -3456,7 +3522,7 @@
             });
         }
 
-        // تصدير الدوال العامة
+        // تصدير الدوال العامة (مع إضافة الدوال الجديدة)
         window.showScreen = showScreen;
         window.goBack = goBack;
         window.skipLogin = skipLogin;
@@ -3477,7 +3543,14 @@
         window.openImageModal = openImageModal;
         window.closeImageModal = closeImageModal;
         window.logout = logout;
+        window.switchAccount = switchAccount;
+        window.confirmLogout = confirmLogout;
         window.saveProfile = saveProfile;
+        window.showChangePasswordModal = showChangePasswordModal;
+        window.showSecurityModal = showSecurityModal;
+        window.closeModal = closeModal;
+        window.changePassword = changePassword;
+        window.saveSecuritySettings = saveSecuritySettings;
         // دوال البائع
         window.refreshSellerDashboard = refreshSellerDashboard;
         window.showAddProductForm = showAddProductForm;
@@ -3500,7 +3573,6 @@
     <!-- ========== شرح إعداد Supabase ========== -->
     <!--
     ✅ لإعداد Supabase بشكل صحيح اتبع الخطوات التالية:
-
     1. سجل الدخول إلى حسابك في Supabase وافتح مشروعك.
     2. من القائمة الجانبية اختر "Storage".
     3. اضغط على "Create bucket" وأنشئ bucket جديد باسم: product-images
@@ -3518,7 +3590,6 @@
        - من القائمة الجانبية اختر "Settings" → "API".
        - انسخ "Project URL" وضعه في المتغير SUPABASE_URL.
        - انسخ "anon public" وضعه في المتغير SUPABASE_ANON_KEY.
-
     9. الآن الكود جاهز للعمل على الهاتف والكمبيوتر.
     -->
 </body>
