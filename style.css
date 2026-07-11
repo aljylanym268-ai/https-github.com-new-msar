@@ -1,6 +1,5 @@
 /* ============================================================
    style.css – التصميم الفرعوني الكامل لـ Misar Systems
-   (نسخة محسّنة مع الحفاظ على الأداء والوظائف)
    ============================================================ */
 
 /* ===== استيراد الخطوط ===== */
@@ -148,7 +147,6 @@ body {
     z-index: 1000;
     box-shadow: 0 4px 20px rgba(26,35,126,0.7);
     border-bottom: 4px solid var(--gold);
-    position: relative;
     -webkit-backface-visibility: hidden;
 }
 .app-header::after {
@@ -511,9 +509,7 @@ body {
     font-weight: 700;
 }
 
-/* ============================================================
-   🟢 الدب الفرعوني – تم تعديله ليصبح تمثال فرعون
-   ============================================================ */
+/* ===== الدب الفرعوني ===== */
 .bear-wrapper {
     display: flex;
     justify-content: center;
@@ -524,8 +520,6 @@ body {
     0% { opacity: 0; transform: scale(0.8) rotate(-2deg); }
     100% { opacity: 1; transform: scale(1) rotate(0); }
 }
-
-/* ✅ صورة الفرعون - خلفية بالصورة مع تأثيرات ذهبية */
 .bear-avatar {
     position: relative;
     width: 140px;
@@ -545,11 +539,8 @@ body {
     backface-visibility: hidden;
     transform: translateZ(0);
 }
-/* إخفاء عناصر الدب القديمة */
 .bear-avatar::before, .bear-avatar::after, .bear-mouth::after { display: none !important; }
 .bear-ear, .bear-face, .brows, .bear-eyes, .bear-nose, .bear-mouth { display: none !important; }
-
-/* خلفية مضيئة */
 .bear-backdrop {
     position: absolute;
     width: 160px;
@@ -559,8 +550,6 @@ body {
     z-index: -1;
     filter: blur(15px);
 }
-
-/* الكفوف لتفاعل تغطية العينين (مثل الدب لكن مع تعديل) */
 .cover-paws {
     position: absolute;
     top: 0; left: 0;
@@ -746,8 +735,6 @@ body {
     box-shadow: 0 12px 40px rgba(212,175,55,0.2);
     border-color: var(--blue-royal);
 }
-
-/* ✅ إصلاح صورة المنتج */
 .product-image {
     height: 130px;
     background-color: #d4b48c;
@@ -789,7 +776,6 @@ body {
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
-    height: auto;
     word-break: break-word;
 }
 .product-price {
@@ -819,6 +805,106 @@ body {
     touch-action: manipulation;
 }
 .add-to-cart:active { transform: scale(0.95); }
+
+/* ===== تفاصيل المنتج (product.html) ===== */
+.product-detail-container {
+    display: flex;
+    flex-direction: column;
+    background: var(--sand);
+    min-height: 100vh;
+}
+.product-detail-image {
+    width: 100%;
+    height: 300px;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    position: relative;
+    border-bottom: 4px solid var(--gold);
+}
+.product-detail-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+.product-detail-info {
+    padding: 20px 5%;
+    max-width: 800px;
+    margin: 0 auto;
+    width: 100%;
+}
+.product-detail-title {
+    font-size: 1.8rem;
+    font-weight: 900;
+    color: var(--blue-royal);
+    margin-bottom: 10px;
+}
+.product-detail-price {
+    font-size: 2rem;
+    font-weight: 900;
+    color: var(--gold);
+    text-shadow: 0 0 15px var(--gold-shadow);
+    margin-bottom: 15px;
+}
+.product-detail-rating {
+    color: var(--gold);
+    font-size: 1.2rem;
+    margin-bottom: 15px;
+}
+.product-detail-desc {
+    color: var(--brown-mid);
+    font-size: 1rem;
+    line-height: 1.8;
+    margin-bottom: 25px;
+    background: var(--sand-dark);
+    padding: 15px;
+    border-radius: 12px;
+    border: 1px solid var(--gold);
+}
+.product-detail-actions {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    align-items: center;
+}
+.quantity-control {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    background: var(--sand-dark);
+    border: 1px solid var(--gold);
+    border-radius: 30px;
+    padding: 8px 20px;
+}
+.quantity-btn {
+    background: none;
+    border: none;
+    color: var(--brown-dark);
+    font-size: 1.2rem;
+    width: 25px; height: 25px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-weight: bold;
+}
+.add-to-cart-large {
+    flex: 1;
+    padding: 14px 30px;
+    background: linear-gradient(145deg, var(--gold), var(--gold-dark));
+    color: var(--blue-royal);
+    border: none;
+    border-radius: var(--radius-btn);
+    font-weight: 900;
+    font-size: 1.1rem;
+    cursor: pointer;
+    box-shadow: var(--shadow-gold);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
 
 /* ===== السلة ===== */
 .cart-items { padding: 20px 5%; }
@@ -854,28 +940,6 @@ body {
     justify-content: space-between;
     flex-wrap: wrap;
     gap: 6px;
-}
-.quantity-control {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    background: var(--sand-dark);
-    border-radius: 30px;
-    padding: 4px 12px;
-    border: 1px solid var(--gold);
-}
-.quantity-btn {
-    background: none;
-    border: none;
-    color: var(--brown-dark);
-    font-size: 1.1rem;
-    width: 25px; height: 25px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    font-weight: bold;
-    touch-action: manipulation;
 }
 .remove-btn {
     background: none;
@@ -929,6 +993,35 @@ body {
     touch-action: manipulation;
 }
 .checkout-btn:active { transform: scale(0.96); }
+.cart-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 20px;
+    color: var(--brown-mid);
+}
+.cart-empty i {
+    font-size: 5rem;
+    color: var(--gold);
+    opacity: 0.4;
+    margin-bottom: 20px;
+}
+.cart-empty h3 {
+    font-size: 1.4rem;
+    margin-bottom: 10px;
+    color: var(--brown-dark);
+}
+.cart-empty button {
+    margin-top: 20px;
+    padding: 12px 30px;
+    background: var(--gold);
+    color: var(--blue-royal);
+    border: none;
+    border-radius: 30px;
+    font-weight: 900;
+    cursor: pointer;
+}
 
 /* ===== الخدمات ===== */
 .services-list {
@@ -1245,6 +1338,7 @@ body {
 .order-status.confirmed { background: #2196f3; color: #fff; }
 .order-status.prepared { background: #9c27b0; color: #fff; }
 .order-status.picked_up { background: #00bcd4; color: #fff; }
+.order-status.picked_up_from_seller { background: #009688; color: #fff; }
 .order-status.in_delivery { background: #ff9800; color: #fff; }
 .order-status.delivered { background: #4caf50; color: #fff; }
 .order-status.cancelled { background: #f44336; color: #fff; }
@@ -1327,7 +1421,7 @@ body {
 .product-action-btn.delete { background: var(--red-dark); color: var(--text-light); }
 .product-action-btn.stock { background: var(--sand-dark); color: var(--brown-dark); border: 1px solid var(--gold); }
 
-/* ===== أدوات البائع (QR, روابط) ===== */
+/* ===== أدوات البائع ===== */
 .qr-section {
     background: white;
     border-radius: 20px;
@@ -1828,6 +1922,7 @@ body {
 }
 .approve-btn { background: #4CAF50; color: white; }
 .reject-btn { background: #f44336; color: white; }
+.suspend-btn { background: #ff9800; color: white; }
 
 /* ===== شاشة الموقع ===== */
 .location-screen {
@@ -1948,7 +2043,7 @@ body {
 .toggle-password i { pointer-events: none; }
 .toggle-password:hover { background: rgba(212,175,55,0.1); color: var(--blue-royal); }
 
-/* ===== معرض الصور (مودال) ===== */
+/* ===== معرض الصور ===== */
 .image-modal {
     display: none;
     position: fixed;
@@ -1985,10 +2080,31 @@ body {
     font-weight: 700;
 }
 
-/* ===== Toast / الإشعارات ===== */
+/* ===== Toast ===== */
 .toast {
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--blue-royal);
+    color: var(--text-light);
+    padding: 12px 25px;
+    border-radius: 50px;
+    border: 2px solid var(--gold);
+    font-weight: 700;
+    z-index: 99999;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
     animation: slideDown 0.3s ease;
+    max-width: 90%;
 }
+.toast.success { background: #2e7d32; }
+.toast.error { background: var(--red-dark); }
+.toast.warning { background: #e65100; }
+.toast i { font-size: 1.2rem; }
+
 @keyframes slideDown {
     from { opacity: 0; transform: translateX(-50%) translateY(-20px); }
     to { opacity: 1; transform: translateX(-50%) translateY(0); }
@@ -2029,11 +2145,7 @@ body {
     .founder-card { padding: 1.5vh 4vw 2vh; }
 }
 
-/* ============================================================
-   🔥 إصلاح نهائي لظهور جميع الصور في المتجر والعميل
-   ============================================================ */
-
-/* 1. التأكد من أن أي صورة داخل شاشات التطبيق تظهر بشكل صحيح */
+/* ===== إصلاح ظهور الصور ===== */
 .screen img,
 .modal-content img,
 .chatbot-screen img {
@@ -2041,8 +2153,6 @@ body {
     height: auto;
     display: block;
 }
-
-/* 2. إصلاح صور الأفاتار في جميع الأماكن (الهيدر، البروفايل، التعديل) */
 .user-avatar img,
 .profile-avatar img,
 .edit-avatar-preview img,
@@ -2055,23 +2165,17 @@ body {
     object-fit: cover !important;
     display: block !important;
 }
-
-/* 3. إصلاح صور المنتجات في المتجر (تغطية كاملة مع الحفاظ على نسب العرض) */
 .product-image img {
     width: 100% !important;
     height: 100% !important;
     object-fit: cover !important;
     display: block !important;
 }
-
-/* 4. إصلاح أي صورة خلفية (background-image) في العناصر */
 [style*="background-image"] {
     background-size: cover !important;
     background-position: center !important;
     background-repeat: no-repeat !important;
 }
-
-/* 5. ضمان ظهور صور المعرض والصور المرفوعة */
 .image-preview-list img {
     width: 60px !important;
     height: 60px !important;
@@ -2080,11 +2184,7 @@ body {
     display: block !important;
 }
 
-/* ============================================================
-   🟢 تنسيق صورة البائع في المتجر (كبيرة في النص والاسم تحتها)
-   ============================================================ */
-
-/* الحاوية الرئيسية للصورة والاسم */
+/* ===== تنسيق صورة البائع في المتجر ===== */
 .seller-store-header {
     display: flex;
     flex-direction: column;
@@ -2095,8 +2195,6 @@ body {
     background: transparent;
     width: 100%;
 }
-
-/* الصورة - كبيرة جداً في النص */
 .seller-store-avatar {
     width: 160px;
     height: 160px;
@@ -2112,16 +2210,12 @@ body {
     cursor: pointer;
     flex-shrink: 0;
 }
-
-/* الصورة نفسها تغطي المساحة بالكامل */
 .seller-store-avatar img {
     width: 100% !important;
     height: 100% !important;
     object-fit: cover !important;
     display: block !important;
 }
-
-/* اسم البائع - كبير وواضح تحت الصورة مباشرة */
 .seller-store-name {
     font-size: 2rem;
     font-weight: 900;
@@ -2134,14 +2228,10 @@ body {
     padding: 0 15px;
     word-break: break-word;
 }
-
-/* اسم البائع باللون الذهبي لو الخلفية غامقة */
 .seller-store-header.dark-bg .seller-store-name {
     color: var(--gold);
     text-shadow: 0 0 20px var(--gold-shadow);
 }
-
-/* تنسيق فرعي (مثل "جميع المنتجات" أو "متجر البائع") */
 .seller-store-subtitle {
     font-size: 1rem;
     color: var(--brown-mid);
@@ -2151,24 +2241,7 @@ body {
     text-align: center;
 }
 
-/* تحسين الشكل في الشاشات الصغيرة */
-@media (max-width: 480px) {
-    .seller-store-avatar {
-        width: 120px;
-        height: 120px;
-        border-width: 4px;
-    }
-    .seller-store-name {
-        font-size: 1.5rem;
-        margin-top: 12px;
-    }
-}
-
-/* ============================================================
-   🟢 إجبار صورة البائع على الظهور كبيرة (حتى لو HTML قديم)
-   ============================================================ */
-
-/* استهداف أي صورة أفاتار داخل شاشة المتجر */
+/* ===== إجبار صورة البائع على الظهور كبيرة ===== */
 .screen .profile-avatar,
 .screen .user-avatar,
 .screen .store-avatar {
@@ -2183,8 +2256,6 @@ body {
     justify-content: center;
     overflow: hidden;
 }
-
-/* التأكد من أن الصورة جواها تغطي كامل المساحة */
 .screen .profile-avatar img,
 .screen .user-avatar img,
 .screen .store-avatar img {
@@ -2193,8 +2264,6 @@ body {
     object-fit: cover !important;
     display: block !important;
 }
-
-/* تكبير اسم البائع الموجود تحت الصورة مباشرة */
 .screen .profile-name,
 .screen .store-name {
     font-size: 2rem !important;
@@ -2204,8 +2273,6 @@ body {
     margin-top: 10px !important;
     display: block !important;
 }
-
-/* النص الفرعي (زي "جميع المنتجات") */
 .screen .profile-subtitle,
 .screen .store-subtitle {
     font-size: 1rem !important;
@@ -2214,8 +2281,6 @@ body {
     margin-top: 5px !important;
     opacity: 0.8;
 }
-
-/* تحسين الشكل في الموبايل */
 @media (max-width: 480px) {
     .screen .profile-avatar,
     .screen .user-avatar {
@@ -2225,4 +2290,112 @@ body {
     .screen .profile-name {
         font-size: 1.5rem !important;
     }
+    .seller-store-avatar {
+        width: 120px;
+        height: 120px;
+        border-width: 4px;
+    }
+    .seller-store-name {
+        font-size: 1.5rem;
+        margin-top: 12px;
+    }
+}   
+/* ===== أزرار المندوب الجديدة ===== */
+.action-btn-small {
+    padding: 6px 12px;
+    border: none;
+    border-radius: 30px;
+    font-weight: 700;
+    font-size: 0.8rem;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: var(--sand-dark);
+    color: var(--brown-dark);
+    border: 1px solid var(--gold);
+    transition: var(--transition);
+}
+.action-btn-small:hover {
+    background: var(--gold);
+    color: var(--blue-royal);
+}
+.action-btn-success {
+    padding: 6px 12px;
+    border: none;
+    border-radius: 30px;
+    font-weight: 700;
+    font-size: 0.8rem;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: #4CAF50;
+    color: white;
+}
+.action-btn-danger {
+    padding: 6px 12px;
+    border: none;
+    border-radius: 30px;
+    font-weight: 700;
+    font-size: 0.8rem;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: #f44336;
+    color: white;
+}
+.action-btn-primary {
+    padding: 6px 12px;
+    border: none;
+    border-radius: 30px;
+    font-weight: 700;
+    font-size: 0.8rem;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: var(--blue-royal);
+    color: var(--gold);
+}
+
+/* ===== أزرار المؤسس ===== */
+.suspend-btn {
+    background: #ff9800;
+    color: white;
+    padding: 6px 14px;
+    border: none;
+    border-radius: 30px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: var(--transition);
+}
+.suspend-btn:hover {
+    opacity: 0.85;
+}
+
+/* ===== عرض بيانات المندوب للعميل ===== */
+.delivery-person-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 10px;
+    padding: 8px;
+    background: #f5f7fa;
+    border-radius: 8px;
+}
+.delivery-person-info img {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+.delivery-person-info a {
+    color: #1a237e;
+    margin-right: 8px;
+    font-size: 1.2rem;
+}
+.delivery-person-info a.whatsapp {
+    color: #25D366;
 }

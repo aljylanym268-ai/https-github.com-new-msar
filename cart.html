@@ -17,14 +17,12 @@
     <div class="status-bar"></div>
     <div class="loading" id="loadingScreen" style="display:none;"><div class="loading-spinner"></div><p>جاري التحميل...</p></div>
 
-    <!-- شاشة السلة فقط -->
     <div class="screen active" id="cartScreen">
         <div class="app-header"><div class="header-content"><div class="header-left"><button class="back-btn active" onclick="window.location.href='index.html'"><i class="fas fa-arrow-right"></i></button><div class="header-title">سلة التسوق</div></div></div></div>
         <div class="cart-items" id="cartItems"></div>
         <div class="cart-summary"><div class="cart-total"><div class="total-label">الإجمالي:</div><div class="total-amount" id="cartTotal">0 ج.م</div></div><button class="checkout-btn" onclick="openCheckout()"><i class="fas fa-shopping-bag"></i> إتمام الشراء</button></div>
     </div>
 
-    <!-- مودال إتمام الطلب -->
     <div id="checkoutModal" class="modal" onclick="if(event.target===this) closeCheckoutModal()"><div class="modal-content"><h3 style="color:#1a237e; margin-bottom:15px;">إتمام الطلب</h3><div class="input-group"><label class="input-label">الاسم الكامل</label><input type="text" id="checkoutName" class="input-field" placeholder="أدخل اسمك"></div><div class="input-group"><label class="input-label">رقم الهاتف</label><input type="tel" id="checkoutPhone" class="input-field" placeholder="أدخل رقم الهاتف"></div><div class="input-group"><label class="input-label">العنوان</label><textarea id="checkoutAddress" class="input-field" rows="2" placeholder="أدخل العنوان بالتفصيل"></textarea></div><div style="display:flex; gap:10px; margin-top:20px;"><button class="login-btn" style="flex:1;" onclick="confirmOrder()">تأكيد الطلب</button><button class="google-btn" style="flex:1;" onclick="closeCheckoutModal()">إلغاء</button></div></div></div>
 
     <div class="loading-overlay" id="loadingOverlay"><div class="loading-spinner-large"></div></div>

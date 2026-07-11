@@ -47,6 +47,42 @@
         .toggle-password i {
             pointer-events: none;
         }
+        .suspend-btn {
+            background: #ff9800;
+            color: white;
+            padding: 6px 14px;
+            border: none;
+            border-radius: 30px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        .suspend-btn:hover {
+            opacity: 0.85;
+        }
+        .delivery-person-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 10px;
+            padding: 8px;
+            background: #f5f7fa;
+            border-radius: 8px;
+        }
+        .delivery-person-info img {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+        .delivery-person-info a {
+            color: #1a237e;
+            margin-right: 8px;
+            font-size: 1.2rem;
+        }
+        .delivery-person-info a.whatsapp {
+            color: #25D366;
+        }
     </style>
 </head>
 <body>
@@ -177,6 +213,16 @@
                     <option value="seller">بائع</option>
                     <option value="delivery">مندوب</option>
                 </select>
+
+                <!-- حقل المحافظة -->
+                <div class="input-group">
+                    <label class="input-label">المحافظة</label>
+                    <select class="location-select" id="registerGovernorate">
+                        <option value="قنا" selected>قنا</option>
+                        <!-- يمكن إضافة محافظات أخرى حسب الحاجة -->
+                    </select>
+                </div>
+
                 <div id="deliveryCenterField" style="display:none;">
                     <div class="input-group">
                         <label class="input-label">المركز (للمندوبين)</label>
@@ -559,6 +605,10 @@
                 <div class="founder-dashboard-title"><i class="fas fa-users"></i> طلبات انضمام المناديب</div>
                 <div id="pendingDeliveriesList" class="pending-deliveries-list"><p>جاري التحميل...</p></div>
             </div>
+            <div class="founder-dashboard-card">
+                <div class="founder-dashboard-title"><i class="fas fa-users-cog"></i> إدارة المناديب</div>
+                <div id="allDeliveryPersonsList" class="pending-deliveries-list"><p>جاري التحميل...</p></div>
+            </div>
         </div>
     </div>
 
@@ -814,6 +864,41 @@
             console.warn('⚠️ لم يتم العثور على الزر registerBtn');
         }
 
+        // ========== إظهار/إخفاء حقل مركز المندوب عند تغيير نوع الحساب (الخيار التاني) ==========
+        const registerAccountType = document.getElementById('registerAccountType');
+        const deliveryCenterField = document.getElementById('deliveryCenterField');
+        const deliveryCenterSelect = document.getElementById('deliveryCenterSelect');
+
+        // ========== بحث المتجر (FIX: ربط شريط البحث بالدالة) ==========
+        const marketSearchInput = document.getElementById('marketSearchInput');
+        const clearSearchBtn = document.getElementById('clearSearch');
+        if (marketSearchInput) {
+            marketSearchInput.addEventListener('input', () => {
+                const q = (marketSearchInput.value || '').trim();
+                if (clearSearchBtn) clearSearchBtn.style.display = q ? 'block' : 'none';
+                if (typeof filterMarketProducts === 'function') filterMarketProducts(q);
+            });
+        }
+
+
+        function syncDeliveryCenterVisibility() {
+            if (!registerAccountType || !deliveryCenterField) return;
+            const isDelivery = registerAccountType.value === 'delivery';
+            deliveryCenterField.style.display = isDelivery ? 'block' : 'none';
+
+            // إذا المستخدم رجع/تبدّل نوعه، نضمن الـ select يكون جاهز
+            if (isDelivery && deliveryCenterSelect) {
+                deliveryCenterSelect.disabled = false;
+            }
+        }
+
+        if (registerAccountType) {
+            registerAccountType.addEventListener('change', syncDeliveryCenterVisibility);
+            // تزامن أولي عند فتح الصفحة
+            syncDeliveryCenterVisibility();
+        }
+
+
         // 3. زر Google
         const googleBtn = document.getElementById('googleLoginBtn');
         if (googleBtn) {
@@ -843,6 +928,32 @@
 
         // ========== حفظ الموقع ==========
         document.getElementById('saveLocationBtn')?.addEventListener('click', saveLocation);
+
+        // ========== تحديث القرى عند تغيير المركز ==========
+        const centerSelect = document.getElementById('centerSelect');
+        const villageSelect = document.getElementById('villageSelect');
+        if (centerSelect && villageSelect) {
+            // عند تغيير المركز: أعد تعبئة القرى
+            centerSelect.addEventListener('change', () => {
+                const center = centerSelect.value;
+                if (!center) {
+                    villageSelect.innerHTML = '<option value="">اختر القرية</option>';
+                    villageSelect.disabled = true;
+                    return;
+                }
+                villageSelect.disabled = false;
+                loadVillagesForCenter(center, '');
+            });
+
+            // إذا كان المركز محفوظ مسبقاً في appState.location: فعّل التحميل
+            if (appState.location?.center) {
+                centerSelect.value = appState.location.center;
+                villageSelect.disabled = false;
+                loadVillagesForCenter(appState.location.center, appState.location.village || '');
+            } else {
+                villageSelect.disabled = true;
+            }
+        }
 
         // ========== مستمع حدث المصادقة (لتحديث الواجهة تلقائياً) ==========
         supabaseClient.auth.onAuthStateChange(async (event, session) => {
@@ -919,4 +1030,3 @@
 </script>
 </body>
 </html>
-

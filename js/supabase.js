@@ -1,10 +1,9 @@
-
 // ========== قاعدة البيانات ==========
-const SUPABASE_URL = 'https://vkwdplfgeptshwtuqcns.supabase.co';
-const SUPABASE_ANON_KEY = 'sb_publishable_SyndAPfHCIGnPROadITUwQ_EcWjqnVx';
+const SUPABASE_URL = 'https://wwojtkxwmgkrudtevbcb.supabase.co';
+const SUPABASE_ANON_KEY = 'sb_publishable_Rqi9qMZgIrslWSDc61gG-A_QGQxcvNr';
 const { createClient } = supabase;
-const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
+const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 // ========== الحالة العامة ==========
 const appState = {
@@ -64,6 +63,16 @@ function showToast(message, type = 'success') {
     setTimeout(() => toast.remove(), 3000);
 }
 function escapeHTML(str) { return String(str).replace(/[&<>"]/g, function(m) { if (m === '&') return '&amp;'; if (m === '<') return '&lt;'; if (m === '>') return '&gt;'; if (m === '"') return '&quot;'; return m; }); }
+
+// ========== توليد رمز OTP ==========
+function generateOTP(length = 6) {
+    const digits = '0123456789';
+    let otp = '';
+    for (let i = 0; i < length; i++) {
+        otp += digits[Math.floor(Math.random() * 10)];
+    }
+    return otp;
+}
 
 // ========== ضغط الصور ==========
 async function compressImage(file, maxWidth = 1024, maxHeight = 1024, quality = 0.8) {
@@ -198,6 +207,7 @@ async function signUpWithEmail() {
     const passwordInput = document.getElementById('registerPassword');
     const confirmInput = document.getElementById('registerConfirmPassword');
     const accountTypeSelect = document.getElementById('registerAccountType');
+    const governorateSelect = document.getElementById('registerGovernorate');
 
     if (!emailInput || !passwordInput || !confirmInput || !accountTypeSelect) {
         showToast('النموذج غير مكتمل، أعد تحميل الصفحة', 'error');
@@ -210,6 +220,7 @@ async function signUpWithEmail() {
     const confirm = confirmInput.value;
     let accountType = accountTypeSelect.value;
     let deliveryCenter = '';
+    let governorate = governorateSelect ? governorateSelect.value : 'قنا';
 
     if (accountType === 'delivery') {
         const centerSelect = document.getElementById('deliveryCenterSelect');
@@ -237,6 +248,7 @@ async function signUpWithEmail() {
         return;
     }
 
+    // حساب المؤسس الثابت
     if (email === 'sa3dgelany@gmail.com') {
         accountType = 'founder';
         if (password !== '123456') {
@@ -247,7 +259,8 @@ async function signUpWithEmail() {
 
     const metadata = {
         account_type: accountType,
-        full_name: name || undefined
+        full_name: name || undefined,
+        governorate: governorate
     };
     if (accountType === 'delivery') {
         metadata.center = deliveryCenter;
@@ -292,11 +305,13 @@ async function signUpWithEmail() {
             return;
         }
 
+        // حفظ بيانات المستخدم في جدول user_data
         try {
             const userDataToInsert = {
                 id: data.user.id,
                 name: name || data.user.email?.split('@')[0] || '',
                 account_type: accountType,
+                governorate: governorate || 'قنا',
                 center: deliveryCenter || '',
                 status: accountType === 'delivery' ? 'pending' : 'approved',
             };
@@ -313,6 +328,7 @@ async function signUpWithEmail() {
             console.warn('⚠️ خطأ غير متوقع أثناء إدراج user_data:', insertErr);
         }
 
+        // تسجيل الدخول التلقائي
         try {
             const { error: signInError } = await supabaseClient.auth.signInWithPassword({ email, password });
             if (signInError) {
@@ -423,7 +439,7 @@ async function loadUserData() {
             id: appState.user.id,
             name: appState.user.user_metadata?.full_name || appState.user.email?.split('@')[0] || '',
             phone: '',
-            governorate: 'قنا',
+            governorate: appState.user.user_metadata?.governorate || 'قنا',
             center: appState.user.user_metadata?.center || '',
             village: '',
             image_url: appState.user.user_metadata?.avatar_url || '',
@@ -500,7 +516,7 @@ async function loadUserData() {
     }
 }
 
-// ========== تحديث معلومات المستخدم في الواجهة (مع دعم onerror للصور) ==========
+// ========== تحديث معلومات المستخدم في الواجهة ==========
 function updateUserInfo(isGuest = false) {
     const welcomeName = document.getElementById('welcomeName');
     const welcomeAvatar = document.getElementById('welcomeAvatar');
@@ -522,21 +538,18 @@ function updateUserInfo(isGuest = false) {
         const email = appState.user.email;
         const avatar = appState.userData.image_url || appState.user.user_metadata?.avatar_url;
 
-        // تحديث النصوص
         if (welcomeName) welcomeName.textContent = `مرحباً، ${name}`;
         if (profileName) profileName.textContent = name;
         if (profileEmail) profileEmail.textContent = email;
 
-        // تحديث الصورة مع onerror
         if (avatar) {
-const imgHtml = `<img src="${avatar}" alt="صورة المستخدم" onerror="this.onerror=null; this.parentElement.innerHTML='<i class=\"fas fa-user\"></i>';">`;
+            const imgHtml = `<img src="${avatar}" alt="صورة المستخدم" onerror="this.onerror=null; this.parentElement.innerHTML='<i class=\"fas fa-user\"></i>';">`;
             if (welcomeAvatar) welcomeAvatar.innerHTML = imgHtml;
             if (profileAvatar) profileAvatar.innerHTML = imgHtml;
             if (editAvatarImg) {
                 editAvatarImg.src = avatar;
                 editAvatarImg.style.display = 'block';
                 if (editAvatarIcon) editAvatarIcon.style.display = 'none';
-                // معالجة خطأ تحميل الصورة في التعديل أيضاً
                 editAvatarImg.onerror = function() {
                     this.style.display = 'none';
                     if (editAvatarIcon) editAvatarIcon.style.display = 'block';
@@ -547,10 +560,7 @@ const imgHtml = `<img src="${avatar}" alt="صورة المستخدم" onerror="t
             if (profileAvatar) profileAvatar.innerHTML = '<i class="fas fa-user"></i>';
             if (editAvatarImg) { editAvatarImg.style.display = 'none'; if (editAvatarIcon) editAvatarIcon.style.display = 'block'; }
         }
-    }
 
-    // تعبئة حقول التعديل
-    if (appState.user) {
         const editName = document.getElementById('editName');
         if (editName) editName.value = appState.userData.name || '';
         const editPhone = document.getElementById('editPhone');
@@ -566,43 +576,73 @@ const imgHtml = `<img src="${avatar}" alt="صورة المستخدم" onerror="t
     }
 }
 
-// =================== المنطقة (الموقع) ===================
+// ========== الموقع ==========
 function loadVillagesForCenter(center, selectedVillage = '') {
     const villageSelect = document.getElementById('villageSelect');
-    if (!villageSelect) return;
-    villageSelect.innerHTML = '<option value="">اختر القرية</option>';
-    if (center && appState.villagesByCenter[center]) {
-        appState.villagesByCenter[center].forEach(v => {
-            const opt = document.createElement('option');
-            opt.value = v;
-            opt.textContent = v;
-            villageSelect.appendChild(opt);
-        });
+    if (!villageSelect) {
+        console.warn('⚠️ عنصر villageSelect غير موجود في الصفحة');
+        return;
     }
-    if (selectedVillage) {
+    
+    // تفريغ القائمة الحالية
+    villageSelect.innerHTML = '<option value="">اختر القرية</option>';
+    
+    // إذا كان المركز موجوداً في القائمة، أضف القرى
+    if (center && appState.villagesByCenter[center]) {
+        const villages = appState.villagesByCenter[center];
+        villages.forEach(village => {
+            const option = document.createElement('option');
+            option.value = village;
+            option.textContent = village;
+            villageSelect.appendChild(option);
+        });
+    } else {
+        console.log(`لا توجد قرى مسجلة للمركز: ${center}`);
+    }
+    
+    // تحديد القرية المختارة سابقاً (إن وجدت)
+    if (selectedVillage && villageSelect.querySelector(`option[value="${selectedVillage}"]`)) {
         villageSelect.value = selectedVillage;
     }
 }
+
 async function saveLocation() {
     const governorateSelect = document.getElementById('governorateSelect');
     const centerSelect = document.getElementById('centerSelect');
     const villageSelect = document.getElementById('villageSelect');
+    
     if (!centerSelect || !villageSelect) {
         showToast('النموذج غير متوفر', 'error');
         return;
     }
+    
     const governorate = governorateSelect ? governorateSelect.value : 'قنا';
     const center = centerSelect.value;
     const village = villageSelect.value;
-    if (!center || !village) { showToast('يرجى اختيار المركز والقرية', 'warning'); return; }
+    
+    if (!center || !village) {
+        showToast('يرجى اختيار المركز والقرية', 'warning');
+        return;
+    }
+    
     appState.location = { governorate, center, village };
+    
     if (appState.user) {
         try {
-            const { error } = await supabaseClient.from('user_data').upsert({ id: appState.user.id, governorate, center, village });
+            const { error } = await supabaseClient
+                .from('user_data')
+                .upsert({ 
+                    id: appState.user.id, 
+                    governorate, 
+                    center, 
+                    village 
+                });
             if (error) throw error;
+            
             appState.userData.governorate = governorate;
             appState.userData.center = center;
             appState.userData.village = village;
+            
         } catch (error) {
             showToast('فشل حفظ الموقع في قاعدة البيانات', 'error');
             console.error(error);
@@ -611,47 +651,62 @@ async function saveLocation() {
     } else {
         localStorage.setItem('misarUserLocation', JSON.stringify(appState.location));
     }
+    
     updateWelcomeLocation();
     updateProfileLocation();
     showToast('تم حفظ موقعك بنجاح', 'success');
-    if (appState.previousScreen === 'profileScreen') showScreen('profileScreen');
-    else showScreen('homeScreen');
+    
+    if (appState.previousScreen === 'profileScreen') {
+        showScreen('profileScreen');
+    } else {
+        showScreen('homeScreen');
+    }
 }
+
 function openLocationSettings() {
     showScreen('locationScreen');
     setTimeout(() => {
         const loc = appState.user ? appState.userData : appState.location;
         if (!loc) return;
+        
         const center = loc.center || '';
         const village = loc.village || '';
+        
         const centerSelect = document.getElementById('centerSelect');
-        if (centerSelect) centerSelect.value = center;
+        if (centerSelect) {
+            centerSelect.value = center;
+        }
+        
+        // تحميل القرى بناءً على المركز المختار
         loadVillagesForCenter(center, village);
-    }, 100);
+    }, 150);
 }
+
 function updateWelcomeLocation() {
     const el = document.getElementById('welcomeLocation');
     if (!el) return;
     const loc = appState.user ? appState.userData : appState.location;
-    if (loc) {
-        const parts = [loc.governorate || 'قنا', loc.center || '', loc.village || ''].filter(Boolean);
-        el.textContent = `موقعك: ${parts.join(' - ')}`;
+    if (loc && loc.center) {
+        const parts = [loc.governorate || 'قنا', loc.center, loc.village || ''].filter(Boolean);
+        el.textContent = `📍 ${parts.join(' - ')}`;
     } else {
-        el.textContent = 'موقعك: غير محدد';
+        el.textContent = '📍 موقعك: غير محدد';
     }
 }
+
 function updateProfileLocation() {
     const el = document.getElementById('profileLocation');
     if (!el) return;
     const loc = appState.user ? appState.userData : appState.location;
-    if (loc && (loc.center || loc.village)) {
-        const parts = [loc.governorate || 'قنا', loc.center || '', loc.village || ''].filter(Boolean);
+    if (loc && loc.center) {
+        const parts = [loc.governorate || 'قنا', loc.center, loc.village || ''].filter(Boolean);
         el.textContent = `المنطقة: ${parts.join(' - ')}`;
     } else {
         el.textContent = 'المنطقة: غير محددة';
     }
 }
 
+// ========== حفظ الملف الشخصي ==========
 async function saveProfile() {
     if (!appState.user) return showToast('يجب تسجيل الدخول أولاً', 'warning');
     const editName = document.getElementById('editName');
@@ -679,12 +734,10 @@ async function saveProfile() {
     }
     if (Object.keys(updates).length === 1) return showToast('لا توجد تغييرات', 'info');
     showLoading(true);
-    const { error } = await supabaseClient.from('user_data').upsert(updates);
-    showLoading(false);
-    if (error) showToast(error.message, 'error');
-    else {
-        appState.userData = { ...appState.userData, ...updates };
-        updateUserInfo();
+    try {
+        const { error } = await supabaseClient.from('user_data').upsert(updates);
+        if (error) throw error;
+        await loadUserData();
         showToast('تم حفظ التغييرات', 'success');
         goBack();
         if (appState.userData.account_type === 'seller') {
@@ -693,17 +746,20 @@ async function saveProfile() {
                 if (typeof updateStoreTools === 'function') updateStoreTools();
             }
         }
+    } catch (error) {
+        showToast(error.message, 'error');
+    } finally {
+        showLoading(false);
     }
 }
 
-// ========== رفع الصورة الشخصية (مع تحسين المعاينة والتحديث) ==========
+// ========== رفع الصورة الشخصية ==========
 document.getElementById('avatarUpload')?.addEventListener('change', async function(e) {
     const file = e.target.files[0];
     if (!file || !appState.user) return;
     if (!file.type.startsWith('image/')) return showToast('يرجى اختيار صورة', 'warning');
     if (file.size > 5 * 1024 * 1024) return showToast('الحد الأقصى 5 ميجابايت', 'warning');
 
-    // معاينة الصورة قبل الرفع
     const reader = new FileReader();
     reader.onload = function(ev) {
         const preview = document.getElementById('editAvatarImg');
@@ -724,15 +780,13 @@ document.getElementById('avatarUpload')?.addEventListener('change', async functi
         if (uploadError) throw uploadError;
         const { data: { publicUrl } } = supabaseClient.storage.from('user-images').getPublicUrl(path);
 
-        // تحديث قاعدة البيانات
         const { error: updateError } = await supabaseClient
             .from('user_data')
             .upsert({ id: appState.user.id, image_url: publicUrl });
         if (updateError) throw updateError;
 
-        // تحديث الحالة المحلية والواجهة
         appState.userData.image_url = publicUrl;
-        updateUserInfo();  // تحديث كل عناصر الصورة في الواجهة
+        updateUserInfo();
         showToast('تم رفع الصورة الشخصية بنجاح', 'success');
     } catch (err) {
         showToast(err.message, 'error');
@@ -742,36 +796,199 @@ document.getElementById('avatarUpload')?.addEventListener('change', async functi
     }
 });
 
-// ========== دوال المؤسس ==========
+// ========== إعدادات المؤسس ==========
 async function loadGlobalFounderVisibility() {
-    try { const { data, error } = await supabaseClient.from('founder_settings').select('page_visible').eq('id', 1).single(); if (!error && data) { appState.founderPageVisible = data.page_visible; } else { const saved = localStorage.getItem('founder_page_visible'); appState.founderPageVisible = saved !== null ? saved === 'true' : true; } } catch(e) { const saved = localStorage.getItem('founder_page_visible'); appState.founderPageVisible = saved !== null ? saved === 'true' : true; }
+    try {
+        const { data, error } = await supabaseClient
+            .from('founder_settings')
+            .select('page_visible')
+            .eq('id', 1)
+            .maybeSingle();
+
+        if (error) throw error;
+
+        if (data && data.page_visible !== undefined) {
+            appState.founderPageVisible = data.page_visible;
+            localStorage.setItem('founder_page_visible', String(data.page_visible));
+            console.log('✅ تم تحميل رؤية المؤسس من DB:', appState.founderPageVisible);
+        } else {
+            const saved = localStorage.getItem('founder_page_visible');
+            appState.founderPageVisible = saved !== null ? saved === 'true' : true;
+        }
+    } catch (error) {
+        console.warn('⚠️ فشل تحميل إعدادات المؤسس من DB، استخدام localStorage:', error);
+        const saved = localStorage.getItem('founder_page_visible');
+        appState.founderPageVisible = saved !== null ? saved === 'true' : true;
+    }
+
     const toggleSwitch = document.getElementById('toggleFounderPage');
-    if (toggleSwitch && appState.user && appState.userData.account_type === 'founder') { toggleSwitch.checked = appState.founderPageVisible; }
+    if (toggleSwitch && appState.user && appState.userData.account_type === 'founder') {
+        toggleSwitch.checked = appState.founderPageVisible;
+    }
 }
-async function initFounderSettings() { await loadGlobalFounderVisibility(); const toggleSwitch = document.getElementById('toggleFounderPage'); if (toggleSwitch && appState.user && appState.userData.account_type === 'founder') { toggleSwitch.removeEventListener('change', handleToggleChange); toggleSwitch.addEventListener('change', handleToggleChange); } }
-async function handleToggleChange(e) { appState.founderPageVisible = e.target.checked; try { await supabaseClient.from('founder_settings').upsert({ id: 1, page_visible: appState.founderPageVisible }); } catch(error) { console.warn('فشل حفظ الإعدادات في قاعدة البيانات', error); } localStorage.setItem('founder_page_visible', appState.founderPageVisible); showToast(appState.founderPageVisible ? 'تم إظهار صفحة المؤسس للجميع' : 'تم إخفاء صفحة المؤسس عن الجميع', 'success'); }
+
+async function handleToggleChange(e) {
+    const newValue = e.target.checked;
+    appState.founderPageVisible = newValue;
+    localStorage.setItem('founder_page_visible', String(newValue));
+
+    try {
+        const { error } = await supabaseClient
+            .from('founder_settings')
+            .upsert({ id: 1, page_visible: newValue, updated_at: new Date() });
+
+        if (error) throw error;
+        showToast(newValue ? '✅ تم إظهار صفحة المؤسس للجميع' : '✅ تم إخفاء صفحة المؤسس عن الجميع', 'success');
+    } catch (error) {
+        appState.founderPageVisible = !newValue;
+        localStorage.setItem('founder_page_visible', String(!newValue));
+        const toggleSwitch = document.getElementById('toggleFounderPage');
+        if (toggleSwitch) toggleSwitch.checked = !newValue;
+        showToast('❌ فشل حفظ الإعداد في قاعدة البيانات: ' + error.message, 'error');
+        console.error('❌ فشل upsert founder_settings:', error);
+    }
+}
+
+function openFounderProfile() {
+    if (!appState.founderPageVisible) {
+        showToast('⛔ صفحة المؤسس غير متاحة حالياً', 'warning');
+        return;
+    }
+    closeChatbot();
+    const founderScreen = document.getElementById('founderProfileScreen');
+    if (founderScreen) founderScreen.classList.add('active');
+    loadShareCounts();
+    const shareLinkSpan = document.getElementById('founderShareLink');
+    if (shareLinkSpan) shareLinkSpan.textContent = getFounderShareLink();
+    trackFounderView();
+}
+
+async function initFounderSettings() {
+    await loadGlobalFounderVisibility();
+    const toggleSwitch = document.getElementById('toggleFounderPage');
+    if (toggleSwitch && appState.user && appState.userData.account_type === 'founder') {
+        toggleSwitch.removeEventListener('change', handleToggleChange);
+        toggleSwitch.addEventListener('change', handleToggleChange);
+    }
+}
+
+// ========== دوال المؤسس ==========
 async function loadFounderStats() {
-    try { const { data, error } = await supabaseClient.from('founder_views').select('count').eq('id',1).single(); if (!error && data) appState.founderViews = data.count || 0; else appState.founderViews = parseInt(localStorage.getItem('founder_views') || '0'); } catch(e) { appState.founderViews = parseInt(localStorage.getItem('founder_views') || '0'); }
+    try {
+        const { data, error } = await supabaseClient.from('founder_views').select('count').eq('id',1).single();
+        if (!error && data) appState.founderViews = data.count || 0;
+        else appState.founderViews = parseInt(localStorage.getItem('founder_views') || '0');
+    } catch(e) { appState.founderViews = parseInt(localStorage.getItem('founder_views') || '0'); }
     const viewsEl = document.getElementById('founderViewsCount');
     if (viewsEl) viewsEl.textContent = appState.founderViews;
-    try { const { data, error } = await supabaseClient.from('founder_shares').select('count'); if (!error && data) { const total = data.reduce((sum, s) => sum + (s.count || 0), 0); const sharesEl = document.getElementById('founderSharesTotal'); if (sharesEl) sharesEl.textContent = total; } else { let total = 0; ['whatsapp','facebook','twitter','copy'].forEach(t => { total += parseInt(localStorage.getItem(`share_${t}`) || '0'); }); const sharesEl = document.getElementById('founderSharesTotal'); if (sharesEl) sharesEl.textContent = total; } } catch(e) { let total = 0; ['whatsapp','facebook','twitter','copy'].forEach(t => { total += parseInt(localStorage.getItem(`share_${t}`) || '0'); }); const sharesEl = document.getElementById('founderSharesTotal'); if (sharesEl) sharesEl.textContent = total; }
+    try {
+        const { data, error } = await supabaseClient.from('founder_shares').select('count');
+        if (!error && data) {
+            const total = data.reduce((sum, s) => sum + (s.count || 0), 0);
+            const sharesEl = document.getElementById('founderSharesTotal');
+            if (sharesEl) sharesEl.textContent = total;
+        } else {
+            let total = 0;
+            ['whatsapp','facebook','twitter','copy'].forEach(t => {
+                total += parseInt(localStorage.getItem(`share_${t}`) || '0');
+            });
+            const sharesEl = document.getElementById('founderSharesTotal');
+            if (sharesEl) sharesEl.textContent = total;
+        }
+    } catch(e) {
+        let total = 0;
+        ['whatsapp','facebook','twitter','copy'].forEach(t => {
+            total += parseInt(localStorage.getItem(`share_${t}`) || '0');
+        });
+        const sharesEl = document.getElementById('founderSharesTotal');
+        if (sharesEl) sharesEl.textContent = total;
+    }
 }
 async function refreshFounderStats() { await loadFounderStats(); showToast('تم تحديث الإحصائيات', 'success'); }
 async function trackFounderView() {
-    try { await supabaseClient.rpc('increment_founder_view'); } catch(e) { let current = parseInt(localStorage.getItem('founder_views') || '0'); current++; localStorage.setItem('founder_views', current); appState.founderViews = current; }
-    const viewsEl = document.getElementById('founderViewsCount'); if (viewsEl) viewsEl.textContent = appState.founderViews;
+    try { await supabaseClient.rpc('increment_founder_view'); } catch(e) {
+        let current = parseInt(localStorage.getItem('founder_views') || '0');
+        current++;
+        localStorage.setItem('founder_views', current);
+        appState.founderViews = current;
+    }
+    const viewsEl = document.getElementById('founderViewsCount');
+    if (viewsEl) viewsEl.textContent = appState.founderViews;
 }
 async function trackShare(shareType) {
-    try { const { data, error } = await supabaseClient.from('founder_shares').select('count').eq('share_type', shareType).maybeSingle(); if (error) throw error; let newCount = 1; if (data && data.count !== undefined) { newCount = data.count + 1; await supabaseClient.from('founder_shares').update({ count: newCount, updated_at: new Date() }).eq('share_type', shareType); } else { await supabaseClient.from('founder_shares').insert({ share_type: shareType, count: 1 }); } const span = document.getElementById(`shareCount_${shareType}`); if (span) span.textContent = newCount; const { data: allShares } = await supabaseClient.from('founder_shares').select('count'); if (allShares) { const total = allShares.reduce((sum, s) => sum + (s.count || 0), 0); const sharesEl = document.getElementById('founderSharesTotal'); if (sharesEl) sharesEl.textContent = total; } } catch (err) { console.warn('فشل تحديث قاعدة بيانات المشاركات، استخدام localStorage', err); let localCount = parseInt(localStorage.getItem(`share_${shareType}`) || '0'); localCount++; localStorage.setItem(`share_${shareType}`, localCount); const span = document.getElementById(`shareCount_${shareType}`); if (span) span.textContent = localCount; let total = 0; ['whatsapp','facebook','twitter','copy'].forEach(t => { total += parseInt(localStorage.getItem(`share_${t}`) || '0'); }); const sharesEl = document.getElementById('founderSharesTotal'); if (sharesEl) sharesEl.textContent = total; }
+    try {
+        const { data, error } = await supabaseClient.from('founder_shares').select('count').eq('share_type', shareType).maybeSingle();
+        if (error) throw error;
+        let newCount = 1;
+        if (data && data.count !== undefined) {
+            newCount = data.count + 1;
+            await supabaseClient.from('founder_shares').update({ count: newCount, updated_at: new Date() }).eq('share_type', shareType);
+        } else {
+            await supabaseClient.from('founder_shares').insert({ share_type: shareType, count: 1 });
+        }
+        const span = document.getElementById(`shareCount_${shareType}`);
+        if (span) span.textContent = newCount;
+        const { data: allShares } = await supabaseClient.from('founder_shares').select('count');
+        if (allShares) {
+            const total = allShares.reduce((sum, s) => sum + (s.count || 0), 0);
+            const sharesEl = document.getElementById('founderSharesTotal');
+            if (sharesEl) sharesEl.textContent = total;
+        }
+    } catch (err) {
+        console.warn('فشل تحديث قاعدة بيانات المشاركات، استخدام localStorage', err);
+        let localCount = parseInt(localStorage.getItem(`share_${shareType}`) || '0');
+        localCount++;
+        localStorage.setItem(`share_${shareType}`, localCount);
+        const span = document.getElementById(`shareCount_${shareType}`);
+        if (span) span.textContent = localCount;
+        let total = 0;
+        ['whatsapp','facebook','twitter','copy'].forEach(t => {
+            total += parseInt(localStorage.getItem(`share_${t}`) || '0');
+        });
+        const sharesEl = document.getElementById('founderSharesTotal');
+        if (sharesEl) sharesEl.textContent = total;
+    }
 }
 async function loadShareCounts() {
-    try { const { data, error } = await supabaseClient.from('founder_shares').select('share_type, count'); if (error) throw error; if (data && data.length) { data.forEach(item => { const span = document.getElementById(`shareCount_${item.share_type}`); if (span) span.textContent = item.count; }); const total = data.reduce((sum, s) => sum + (s.count || 0), 0); const sharesEl = document.getElementById('founderSharesTotal'); if (sharesEl) sharesEl.textContent = total; } else { ['whatsapp', 'facebook', 'twitter', 'copy'].forEach(type => { const count = localStorage.getItem(`share_${type}`) || 0; const span = document.getElementById(`shareCount_${type}`); if (span) span.textContent = count; }); let total = 0; ['whatsapp','facebook','twitter','copy'].forEach(t => { total += parseInt(localStorage.getItem(`share_${t}`) || '0'); }); const sharesEl = document.getElementById('founderSharesTotal'); if (sharesEl) sharesEl.textContent = total; } } catch (err) { console.warn(err); }
+    try {
+        const { data, error } = await supabaseClient.from('founder_shares').select('share_type, count');
+        if (error) throw error;
+        if (data && data.length) {
+            data.forEach(item => {
+                const span = document.getElementById(`shareCount_${item.share_type}`);
+                if (span) span.textContent = item.count;
+            });
+            const total = data.reduce((sum, s) => sum + (s.count || 0), 0);
+            const sharesEl = document.getElementById('founderSharesTotal');
+            if (sharesEl) sharesEl.textContent = total;
+        } else {
+            ['whatsapp', 'facebook', 'twitter', 'copy'].forEach(type => {
+                const count = localStorage.getItem(`share_${type}`) || 0;
+                const span = document.getElementById(`shareCount_${type}`);
+                if (span) span.textContent = count;
+            });
+            let total = 0;
+            ['whatsapp','facebook','twitter','copy'].forEach(t => {
+                total += parseInt(localStorage.getItem(`share_${t}`) || '0');
+            });
+            const sharesEl = document.getElementById('founderSharesTotal');
+            if (sharesEl) sharesEl.textContent = total;
+        }
+    } catch (err) { console.warn(err); }
 }
-function getFounderShareLink() { const founderUsername = 'mohamed_saad'; const baseUrl = window.location.origin + window.location.pathname; return `${baseUrl}?founder=${founderUsername}`; }
+function getFounderShareLink() {
+    const founderUsername = 'mohamed_saad';
+    const baseUrl = window.location.origin + window.location.pathname;
+    return `${baseUrl}?founder=${founderUsername}`;
+}
 async function shareFounderPage(method) {
     await loadGlobalFounderVisibility();
-    if (!appState.founderPageVisible) { showToast('صفحة المؤسس مخفية حالياً من قبل الإدارة، لا يمكن مشاركتها', 'warning'); return; }
-    const link = getFounderShareLink(); const text = `تعرف على مؤسس شركة Misar Systems المهندس محمد سعد وقصة نجاحه من خلال هذا الرابط:`;
+    if (!appState.founderPageVisible) {
+        showToast('صفحة المؤسس مخفية حالياً من قبل الإدارة، لا يمكن مشاركتها', 'warning');
+        return;
+    }
+    const link = getFounderShareLink();
+    const text = `تعرف على مؤسس شركة Misar Systems المهندس محمد سعد وقصة نجاحه من خلال هذا الرابط:`;
     let shareUrl = '';
     switch(method) {
         case 'whatsapp': shareUrl = `https://wa.me/?text=${encodeURIComponent(text + ' ' + link)}`; window.open(shareUrl, '_blank'); break;
@@ -781,48 +998,209 @@ async function shareFounderPage(method) {
     }
     trackShare(method);
 }
-function checkFounderParam() { const params = new URLSearchParams(window.location.search); const founder = params.get('founder'); if (founder && founder === 'mohamed_saad') { setTimeout(async () => { await loadGlobalFounderVisibility(); if (appState.founderPageVisible) { openFounderProfile(); } else { showToast('صفحة المؤسس غير متاحة حالياً', 'warning'); } const newUrl = window.location.origin + window.location.pathname; window.history.replaceState({}, document.title, newUrl); }, 1000); } }
-function openFounderProfile() { closeChatbot(); const founderScreen = document.getElementById('founderProfileScreen'); if (founderScreen) founderScreen.classList.add('active'); loadShareCounts(); const shareLinkSpan = document.getElementById('founderShareLink'); if (shareLinkSpan) shareLinkSpan.textContent = getFounderShareLink(); trackFounderView(); }
-function closeFounderProfile() { const founderScreen = document.getElementById('founderProfileScreen'); if (founderScreen) founderScreen.classList.remove('active'); openChatbot(); }
-function contactDeveloper() { window.open('https://app.fastbots.ai/embed/cmillclid07mep81pmwkjqyq6', '_blank'); }
-function openImageModal() { const img = document.querySelector('.founder-avatar img'); if (!img) return; const modalImage = document.getElementById('modalImage'); const imageModal = document.getElementById('imageModal'); if (modalImage) modalImage.src = img.src; if (imageModal) imageModal.classList.add('active'); }
-function closeImageModal(event) { if (event.target === document.getElementById('imageModal') || event.target.classList.contains('close-modal')) { document.getElementById('imageModal').classList.remove('active'); } }
+
+function openImageModal() {
+    const img = document.querySelector('.founder-avatar img');
+    if (!img) return;
+    const modalImage = document.getElementById('modalImage');
+    const imageModal = document.getElementById('imageModal');
+    if (modalImage) modalImage.src = img.src;
+    if (imageModal) imageModal.classList.add('active');
+}
+function closeImageModal(event) {
+    if (event.target === document.getElementById('imageModal') || event.target.classList.contains('close-modal')) {
+        document.getElementById('imageModal').classList.remove('active');
+    }
+}
+function closeFounderProfile() {
+    const founderScreen = document.getElementById('founderProfileScreen');
+    if (founderScreen) founderScreen.classList.remove('active');
+    openChatbot();
+}
+function contactDeveloper() {
+    window.open('https://app.fastbots.ai/embed/cmillclid07mep81pmwkjqyq6', '_blank');
+}
 
 // ========== طلبات انضمام المناديب ==========
 async function loadPendingDeliveries() {
     if (!appState.user || appState.userData.account_type !== 'founder') return;
-    try { const { data, error } = await supabaseClient.from('user_data').select('id, name, email, phone, center, created_at').eq('account_type', 'delivery').eq('status', 'pending'); if (error) throw error; const container = document.getElementById('pendingDeliveriesList'); if (!container) return; if (!data || data.length === 0) { container.innerHTML = '<p>لا توجد طلبات انضمام حالياً</p>'; return; } container.innerHTML = ''; data.forEach(del => { const div = document.createElement('div'); div.className = 'pending-item'; div.innerHTML = `<div class="pending-info"><div class="pending-name">${escapeHTML(del.name || del.email)}</div><div class="pending-email">${del.email} | ${del.phone || 'لا يوجد هاتف'} | المركز: ${del.center || 'غير محدد'}</div></div><div class="pending-actions"><button class="approve-btn" onclick="approveDeliveryPerson('${del.id}')">قبول</button><button class="reject-btn" onclick="rejectDeliveryPerson('${del.id}')">رفض</button></div>`; container.appendChild(div); }); } catch(err) { console.error(err); const container = document.getElementById('pendingDeliveriesList'); if (container) container.innerHTML = '<p>حدث خطأ في تحميل الطلبات</p>'; }
+    try {
+        const { data, error } = await supabaseClient.from('user_data').select('id, name, email, phone, center, created_at').eq('account_type', 'delivery').eq('status', 'pending');
+        if (error) throw error;
+        const container = document.getElementById('pendingDeliveriesList');
+        if (!container) return;
+        if (!data || data.length === 0) { container.innerHTML = '<p>لا توجد طلبات انضمام حالياً</p>'; return; }
+        container.innerHTML = '';
+        data.forEach(del => {
+            const div = document.createElement('div');
+            div.className = 'pending-delivery-item';
+            div.innerHTML = `<div class="pending-info"><div class="pending-name">${escapeHTML(del.name || del.email)}</div><div class="pending-email">${del.email} | ${del.phone || 'لا يوجد هاتف'} | المركز: ${del.center || 'غير محدد'}</div></div><div class="pending-actions"><button class="approve-btn" onclick="approveDeliveryPerson('${del.id}')">قبول</button><button class="reject-btn" onclick="rejectDeliveryPerson('${del.id}')">رفض</button></div>`;
+            container.appendChild(div);
+        });
+    } catch(err) {
+        console.error(err);
+        const container = document.getElementById('pendingDeliveriesList');
+        if (container) container.innerHTML = '<p>حدث خطأ في تحميل الطلبات</p>';
+    }
 }
-async function approveDeliveryPerson(userId) { showLoading(true); try { await supabaseClient.from('user_data').update({ status: 'approved' }).eq('id', userId); showToast('تم قبول المندوب', 'success'); await loadPendingDeliveries(); } catch(err) { showToast(err.message, 'error'); } finally { showLoading(false); } }
-async function rejectDeliveryPerson(userId) { if (!confirm('هل أنت متأكد من رفض هذا المندوب؟ سيتم حذف حسابه.')) return; showLoading(true); try { await supabaseClient.from('user_data').delete().eq('id', userId); showToast('تم رفض المندوب وحذف الحساب', 'success'); await loadPendingDeliveries(); } catch(err) { showToast(err.message, 'error'); } finally { showLoading(false); } }
+async function approveDeliveryPerson(userId) {
+    showLoading(true);
+    try {
+        await supabaseClient.from('user_data').update({ status: 'approved' }).eq('id', userId);
+        showToast('تم قبول المندوب', 'success');
+        await loadPendingDeliveries();
+        if (typeof displayAllDeliveryPersons === 'function') await displayAllDeliveryPersons();
+    } catch(err) {
+        showToast(err.message, 'error');
+    } finally {
+        showLoading(false);
+    }
+}
+async function rejectDeliveryPerson(userId) {
+    if (!confirm('هل أنت متأكد من رفض هذا المندوب؟ سيتم حذف حسابه.')) return;
+    showLoading(true);
+    try {
+        await supabaseClient.from('user_data').delete().eq('id', userId);
+        showToast('تم رفض المندوب وحذف الحساب', 'success');
+        await loadPendingDeliveries();
+        if (typeof displayAllDeliveryPersons === 'function') await displayAllDeliveryPersons();
+    } catch(err) {
+        showToast(err.message, 'error');
+    } finally {
+        showLoading(false);
+    }
+}
 
 // ========== إشعارات واشتراكات ==========
 async function sendNotification(userId, title, message, data = {}) {
-    try { await supabaseClient.from('notifications').insert({ user_id: userId, title, message, data, created_at: new Date(), is_read: false }); } 
-    catch (error) { console.warn('فشل إرسال الإشعار', error); }
+    try {
+        await supabaseClient.from('notifications').insert({
+            user_id: userId, title, message, data, created_at: new Date(), is_read: false
+        });
+    } catch (error) {
+        console.warn('فشل إرسال الإشعار', error);
+    }
 }
-async function loadUnreadNotificationsCount() { if (!appState.user) return; try { const { count, error } = await supabaseClient.from('notifications').select('*', { count: 'exact', head: true }).eq('user_id', appState.user.id).eq('is_read', false); if (!error) { const badge = document.getElementById('notificationBadge'); if (badge) { badge.textContent = count || 0; badge.style.display = count > 0 ? 'flex' : 'none'; } } } catch(e) { console.warn('فشل تحميل عدد الإشعارات', e); } }
-function setupRealtimeSubscriptions() { if (!appState.user) return; if (appState.ordersSubscription) appState.ordersSubscription.unsubscribe(); appState.ordersSubscription = supabaseClient.channel('orders-channel').on('postgres_changes', { event: '*', schema: 'public', table: 'orders' }, (payload) => { console.log('Order change:', payload); if (appState.currentScreen === 'sellerDashboardScreen' && appState.userData.account_type === 'seller') { if (typeof refreshSellerDashboard === 'function') refreshSellerDashboard(); } else if (appState.currentScreen === 'deliveryDashboardScreen') { if (typeof refreshDeliveryDashboard === 'function') refreshDeliveryDashboard(); } else if (appState.currentScreen === 'ordersScreen') { if (typeof loadBuyerOrdersWithTimeline === 'function') loadBuyerOrdersWithTimeline(); } loadUnreadNotificationsCount(); }).subscribe(); if (appState.notificationsSubscription) appState.notificationsSubscription.unsubscribe(); appState.notificationsSubscription = supabaseClient.channel('notifications-channel').on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'notifications', filter: `user_id=eq.${appState.user.id}` }, (payload) => { showToast(payload.new.title, 'info'); loadUnreadNotificationsCount(); }).subscribe(); }
+async function loadUnreadNotificationsCount() {
+    if (!appState.user) return;
+    try {
+        const { count, error } = await supabaseClient.from('notifications').select('*', { count: 'exact', head: true }).eq('user_id', appState.user.id).eq('is_read', false);
+        if (!error) {
+            const badge = document.getElementById('notificationBadge');
+            if (badge) {
+                badge.textContent = count || 0;
+                badge.style.display = count > 0 ? 'flex' : 'none';
+            }
+        }
+    } catch(e) {
+        console.warn('فشل تحميل عدد الإشعارات', e);
+    }
+}
+function setupRealtimeSubscriptions() {
+    if (!appState.user) return;
+    if (appState.ordersSubscription) appState.ordersSubscription.unsubscribe();
+    appState.ordersSubscription = supabaseClient.channel('orders-channel')
+        .on('postgres_changes', {
+            event: '*', schema: 'public', table: 'orders'
+        }, (payload) => {
+            console.log('Order change:', payload);
+            if (appState.currentScreen === 'sellerDashboardScreen' && appState.userData.account_type === 'seller') {
+                if (typeof refreshSellerDashboard === 'function') refreshSellerDashboard();
+            } else if (appState.currentScreen === 'deliveryDashboardScreen') {
+                if (typeof refreshDeliveryDashboard === 'function') refreshDeliveryDashboard();
+            } else if (appState.currentScreen === 'ordersScreen') {
+                if (typeof loadBuyerOrdersWithTimeline === 'function') loadBuyerOrdersWithTimeline();
+            }
+            loadUnreadNotificationsCount();
+        }).subscribe();
+    if (appState.notificationsSubscription) appState.notificationsSubscription.unsubscribe();
+    appState.notificationsSubscription = supabaseClient.channel('notifications-channel')
+        .on('postgres_changes', {
+            event: 'INSERT', schema: 'public', table: 'notifications', filter: `user_id=eq.${appState.user.id}`
+        }, (payload) => {
+            showToast(payload.new.title, 'info');
+            loadUnreadNotificationsCount();
+        }).subscribe();
+}
 
-// ========== التنقل ==========
+// ========== التنقل بين الشاشات ==========
 function showScreen(screenId) {
-    if (screenId === 'sellerDashboardScreen') { if (!appState.user || appState.userData.account_type !== 'seller') { showToast('هذه الصفحة مخصصة للبائعين فقط', 'error'); showScreen('homeScreen'); return; } if (typeof refreshSellerDashboard === 'function') refreshSellerDashboard(); }
-    if (screenId === 'deliveryDashboardScreen') { if (!appState.user || appState.userData.account_type !== 'delivery') { showToast('هذه الصفحة مخصصة للمندوبين فقط', 'error'); showScreen('homeScreen'); return; } if (typeof refreshDeliveryDashboard === 'function') refreshDeliveryDashboard(); }
-    if (screenId === 'founderDashboardScreen') { if (!appState.user || appState.userData.account_type !== 'founder') { showToast('هذه الصفحة مخصصة للمؤسس فقط', 'error'); showScreen('homeScreen'); return; } loadFounderStats(); loadPendingDeliveries(); }
-    if (screenId === 'ordersScreen') { if (typeof loadBuyerOrdersWithTimeline === 'function') loadBuyerOrdersWithTimeline(); }
-    document.querySelectorAll('.screen').forEach(screen => { screen.classList.remove('active'); screen.classList.add('hidden'); });
+    if (screenId === 'sellerDashboardScreen') {
+        if (!appState.user || appState.userData.account_type !== 'seller') {
+            showToast('هذه الصفحة مخصصة للبائعين فقط', 'error');
+            showScreen('homeScreen');
+            return;
+        }
+        if (typeof refreshSellerDashboard === 'function') refreshSellerDashboard();
+    }
+    if (screenId === 'deliveryDashboardScreen') {
+        if (!appState.user || appState.userData.account_type !== 'delivery') {
+            showToast('هذه الصفحة مخصصة للمندوبين فقط', 'error');
+            showScreen('homeScreen');
+            return;
+        }
+        if (typeof refreshDeliveryDashboard === 'function') refreshDeliveryDashboard();
+    }
+    if (screenId === 'founderDashboardScreen') {
+        if (!appState.user || appState.userData.account_type !== 'founder') {
+            showToast('هذه الصفحة مخصصة للمؤسس فقط', 'error');
+            showScreen('homeScreen');
+            return;
+        }
+        loadGlobalFounderVisibility();
+        loadFounderStats();
+        loadPendingDeliveries();
+        if (typeof displayAllDeliveryPersons === 'function') displayAllDeliveryPersons();
+    }
+    if (screenId === 'ordersScreen') {
+        if (typeof loadBuyerOrdersWithTimeline === 'function') loadBuyerOrdersWithTimeline();
+    }
+    if (screenId === 'editProfileScreen') {
+        updateUserInfo();
+    }
+
+    document.querySelectorAll('.screen').forEach(screen => {
+        screen.classList.remove('active');
+        screen.classList.add('hidden');
+    });
     updateNavigation(screenId);
     const screen = document.getElementById(screenId);
-    if (screen) { screen.classList.remove('hidden'); screen.classList.add('active'); appState.previousScreen = appState.currentScreen; appState.currentScreen = screenId; const backBtn = document.querySelector('.back-btn'); if (backBtn) backBtn.classList.toggle('active', screenId !== 'homeScreen' && screenId !== 'locationScreen'); }
-    if (screenId === 'marketScreen') { const searchInput = document.getElementById('marketSearchInput'); if (searchInput) { searchInput.value = ''; } const clearSearch = document.getElementById('clearSearch'); if (clearSearch) clearSearch.style.display = 'none'; if (typeof loadMarketProducts === 'function') loadMarketProducts(); }
+    if (screen) {
+        screen.classList.remove('hidden');
+        screen.classList.add('active');
+        appState.previousScreen = appState.currentScreen;
+        appState.currentScreen = screenId;
+        const backBtn = document.querySelector('.back-btn');
+        if (backBtn) backBtn.classList.toggle('active', screenId !== 'homeScreen' && screenId !== 'locationScreen');
+    }
+    if (screenId === 'marketScreen') {
+        const searchInput = document.getElementById('marketSearchInput');
+        if (searchInput) { searchInput.value = ''; }
+        const clearSearch = document.getElementById('clearSearch');
+        if (clearSearch) clearSearch.style.display = 'none';
+        if (typeof loadMarketProducts === 'function') loadMarketProducts();
+    }
     if (screenId === 'profileScreen') updateProfileLocation();
     if (screenId === 'editProfileScreen' && appState.user) updateProfileLocation();
-    if (screenId === 'servicesScreen') { if (typeof loadServices === 'function') loadServices(); }
-    if (screenId === 'cartScreen') { if (typeof loadCart === 'function') loadCart(); }
+    if (screenId === 'servicesScreen') {
+        if (typeof loadServices === 'function') loadServices();
+    }
+    if (screenId === 'cartScreen') {
+        if (typeof loadCart === 'function') loadCart();
+    }
     if (screenId === 'loginScreen' || screenId === 'registerScreen') setTimeout(addInputInteractions, 50);
 }
 function goBack() { showScreen(appState.previousScreen || 'homeScreen'); }
-function updateNavigation(screenId) { document.querySelectorAll('.nav-item').forEach((item, index) => { item.classList.remove('active'); if (screenId === 'homeScreen' && index === 0) item.classList.add('active'); else if (screenId === 'marketScreen' && index === 1) item.classList.add('active'); else if (screenId === 'servicesScreen' && index === 2) item.classList.add('active'); else if (screenId === 'cartScreen' && index === 3) item.classList.add('active'); else if (screenId === 'profileScreen' && index === 4) item.classList.add('active'); }); }
+function updateNavigation(screenId) {
+    document.querySelectorAll('.nav-item').forEach((item, index) => {
+        item.classList.remove('active');
+        if (screenId === 'homeScreen' && index === 0) item.classList.add('active');
+        else if (screenId === 'marketScreen' && index === 1) item.classList.add('active');
+        else if (screenId === 'servicesScreen' && index === 2) item.classList.add('active');
+        else if (screenId === 'cartScreen' && index === 3) item.classList.add('active');
+        else if (screenId === 'profileScreen' && index === 4) item.classList.add('active');
+    });
+}
 function skipLogin() { showScreen('homeScreen'); }
 function addInputInteractions() {
     const inputs = document.querySelectorAll('#loginScreen input, #registerScreen input');
@@ -848,20 +1226,95 @@ function togglePasswordVisibility(inputId, toggleEl) {
 }
 window.togglePasswordVisibility = togglePasswordVisibility;
 
-// ========== دوال الدردشة ==========
-function openChatbot() { const chatbotScreen = document.getElementById('chatbotScreen'); if (chatbotScreen) chatbotScreen.classList.add('active'); const badge = document.getElementById('chatbotBadge'); if (badge) badge.style.display = 'none'; const messages = document.getElementById('chatMessages'); if (messages) messages.scrollTop = messages.scrollHeight; }
-function closeChatbot() { const chatbotScreen = document.getElementById('chatbotScreen'); if (chatbotScreen) chatbotScreen.classList.remove('active'); }
-function sendMessage() { const input = document.getElementById('chatInput'); if (!input) return; const msg = input.value.trim(); if (!msg) return; addMessage(msg, 'user'); input.value = ''; setTimeout(() => { addMessage(getBotResponse(msg), 'bot'); const messages = document.getElementById('chatMessages'); if (messages) messages.scrollTop = messages.scrollHeight; }, 400); }
-function sendSuggestion(text) { addMessage(text, 'user'); setTimeout(() => { addMessage(getBotResponse(text), 'bot'); const messages = document.getElementById('chatMessages'); if (messages) messages.scrollTop = messages.scrollHeight; }, 400); }
-function addMessage(text, sender) { const container = document.getElementById('chatMessages'); if (!container) return; const div = document.createElement('div'); div.className = `message ${sender}`; div.textContent = text; container.appendChild(div); container.scrollTop = container.scrollHeight; }
-function getBotResponse(msg) { const m = msg.toLowerCase(); if (m.includes('السلام') || m.includes('اهلا')) return 'وعليكم السلام! كيف يمكنني مساعدتك؟ 😊'; if (m.includes('منتجات')) return 'لدينا إلكترونيات، أزياء، أثاث، أطعمة. تصفح المتجر!'; if (m.includes('اشتري') || m.includes('شراء')) return 'اذهب للمتجر، أضف المنتج للسلة ثم أكمل الطلب من صفحة السلة.'; if (m.includes('عروض')) return 'خصم 20% على الأثاث، وساعة هواوي بسعر مميز.'; if (m.includes('صيانة')) return 'خدمات الصيانة متوفرة: أجهزة، سباكة، كهرباء. احجز من قسم الخدمات.'; if (m.includes('طلب')) return 'تابع طلباتك من صفحة "طلباتي" في الملف الشخصي.'; if (m.includes('خدمة العملاء') || m.includes('الدعم')) return 'تواصل معنا: support@misar.com أو 19000.'; if (m.includes('شكرا')) return 'الشكر لله، دائمًا في خدمتك!'; return 'عذرًا، لم أفهم. جرب الاقتراحات أعلاه.'; }
+// ========== الدردشة ==========
+function openChatbot() {
+    const chatbotScreen = document.getElementById('chatbotScreen');
+    if (chatbotScreen) chatbotScreen.classList.add('active');
+    const badge = document.getElementById('chatbotBadge');
+    if (badge) badge.style.display = 'none';
+    const messages = document.getElementById('chatMessages');
+    if (messages) messages.scrollTop = messages.scrollHeight;
+}
+function closeChatbot() {
+    const chatbotScreen = document.getElementById('chatbotScreen');
+    if (chatbotScreen) chatbotScreen.classList.remove('active');
+}
+function sendMessage() {
+    const input = document.getElementById('chatInput');
+    if (!input) return;
+    const msg = input.value.trim();
+    if (!msg) return;
+    addMessage(msg, 'user');
+    input.value = '';
+    setTimeout(() => {
+        addMessage(getBotResponse(msg), 'bot');
+        const messages = document.getElementById('chatMessages');
+        if (messages) messages.scrollTop = messages.scrollHeight;
+    }, 400);
+}
+function sendSuggestion(text) {
+    addMessage(text, 'user');
+    setTimeout(() => {
+        addMessage(getBotResponse(text), 'bot');
+        const messages = document.getElementById('chatMessages');
+        if (messages) messages.scrollTop = messages.scrollHeight;
+    }, 400);
+}
+function addMessage(text, sender) {
+    const container = document.getElementById('chatMessages');
+    if (!container) return;
+    const div = document.createElement('div');
+    div.className = `message ${sender}`;
+    div.textContent = text;
+    container.appendChild(div);
+    container.scrollTop = container.scrollHeight;
+}
+function getBotResponse(msg) {
+    const m = msg.toLowerCase();
+    if (m.includes('السلام') || m.includes('اهلا')) return 'وعليكم السلام! كيف يمكنني مساعدتك؟ 😊';
+    if (m.includes('منتجات')) return 'لدينا إلكترونيات، أزياء، أثاث، أطعمة. تصفح المتجر!';
+    if (m.includes('اشتري') || m.includes('شراء')) return 'اذهب للمتجر، أضف المنتج للسلة ثم أكمل الطلب من صفحة السلة.';
+    if (m.includes('عروض')) return 'خصم 20% على الأثاث، وساعة هواوي بسعر مميز.';
+    if (m.includes('صيانة')) return 'خدمات الصيانة متوفرة: أجهزة، سباكة، كهرباء. احجز من قسم الخدمات.';
+    if (m.includes('طلب')) return 'تابع طلباتك من صفحة "طلباتي" في الملف الشخصي.';
+    if (m.includes('خدمة العملاء') || m.includes('الدعم')) return 'تواصل معنا: support@misar.com أو 19000.';
+    if (m.includes('شكرا')) return 'الشكر لله، دائمًا في خدمتك!';
+    return 'عذرًا، لم أفهم. جرب الاقتراحات أعلاه.';
+}
 
 // ========== دوال الأمان ==========
-function showChangePasswordModal() { if (!appState.user) { showToast('يجب تسجيل الدخول أولاً', 'warning'); return; } const modal = document.getElementById('changePasswordModal'); if (modal) modal.classList.add('active'); }
-function showSecurityModal() { if (!appState.user) { showToast('يجب تسجيل الدخول أولاً', 'warning'); return; } const modal = document.getElementById('securityModal'); if (modal) modal.classList.add('active'); }
-function closeModal(modalId) { const modal = document.getElementById(modalId); if (modal) modal.classList.remove('active'); }
-function changePassword() { const oldPass = document.getElementById('oldPassword'); const newPass = document.getElementById('newPassword'); const confirmPass = document.getElementById('confirmNewPassword'); if (!oldPass || !newPass || !confirmPass) { showToast('يرجى ملء جميع الحقول', 'warning'); return; } if (newPass.value !== confirmPass.value) { showToast('كلمة المرور الجديدة غير متطابقة', 'error'); return; } showToast('تم تغيير كلمة المرور (وهمي)', 'success'); closeModal('changePasswordModal'); oldPass.value = ''; newPass.value = ''; confirmPass.value = ''; }
-function saveSecuritySettings() { const twoFactor = document.getElementById('twoFactorCheck'); const enabled = twoFactor ? twoFactor.checked : false; showToast(`تم حفظ إعدادات الأمان (المصادقة الثنائية: ${enabled ? 'مفعلة' : 'غير مفعلة'})`, 'success'); closeModal('securityModal'); }
+function showChangePasswordModal() {
+    if (!appState.user) { showToast('يجب تسجيل الدخول أولاً', 'warning'); return; }
+    const modal = document.getElementById('changePasswordModal');
+    if (modal) modal.classList.add('active');
+}
+function showSecurityModal() {
+    if (!appState.user) { showToast('يجب تسجيل الدخول أولاً', 'warning'); return; }
+    const modal = document.getElementById('securityModal');
+    if (modal) modal.classList.add('active');
+}
+function closeModal(modalId) {
+    const modal = document.getElementById(modalId);
+    if (modal) modal.classList.remove('active');
+}
+function changePassword() {
+    const oldPass = document.getElementById('oldPassword');
+    const newPass = document.getElementById('newPassword');
+    const confirmPass = document.getElementById('confirmNewPassword');
+    if (!oldPass || !newPass || !confirmPass) { showToast('يرجى ملء جميع الحقول', 'warning'); return; }
+    if (newPass.value !== confirmPass.value) { showToast('كلمة المرور الجديدة غير متطابقة', 'error'); return; }
+    showToast('تم تغيير كلمة المرور (وهمي)', 'success');
+    closeModal('changePasswordModal');
+    oldPass.value = '';
+    newPass.value = '';
+    confirmPass.value = '';
+}
+function saveSecuritySettings() {
+    const twoFactor = document.getElementById('twoFactorCheck');
+    const enabled = twoFactor ? twoFactor.checked : false;
+    showToast(`تم حفظ إعدادات الأمان (المصادقة الثنائية: ${enabled ? 'مفعلة' : 'غير مفعلة'})`, 'success');
+    closeModal('securityModal');
+}
 
 // ========== تصدير الدوال العامة ==========
 window.supabaseClient = supabaseClient;
@@ -914,3 +1367,7 @@ window.saveLocation = saveLocation;
 window.loadUnreadNotificationsCount = loadUnreadNotificationsCount;
 window.setupRealtimeSubscriptions = setupRealtimeSubscriptions;
 window.sendNotification = sendNotification;
+window.loadGlobalFounderVisibility = loadGlobalFounderVisibility;
+window.initFounderSettings = initFounderSettings;
+window.handleToggleChange = handleToggleChange;
+window.generateOTP = generateOTP;
