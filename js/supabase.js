@@ -1043,19 +1043,80 @@ async function loadPendingDeliveries() {
         if (container) container.innerHTML = '<p>حدث خطأ في تحميل الطلبات</p>';
     }
 }
+
+// ========== قبول المندوب (محسّن مع إشعار وتحديث الحقول) ==========
 async function approveDeliveryPerson(userId) {
+    if (!userId) {
+        showToast('معرف المندوب غير صحيح', 'error');
+        return;
+    }
     showLoading(true);
     try {
-        await supabaseClient.from('user_data').update({ status: 'approved' }).eq('id', userId);
-        showToast('تم قبول المندوب', 'success');
+        // جلب بيانات المندوب قبل التحديث للحصول على البريد والاسم للإشعار
+        const { data: deliveryData, error: fetchError } = await supabaseClient
+            .from('user_data')
+            .select('id, name, email, center')
+            .eq('id', userId)
+            .maybeSingle();
+        if (fetchError) throw fetchError;
+        if (!deliveryData) {
+            showToast('المندوب غير موجود', 'error');
+            return;
+        }
+
+        // تحديث الحالة إلى approved وتحديث updated_at
+        const updates = {
+            status: 'approved',
+            updated_at: new Date().toISOString()
+        };
+        const { data, error: updateError } = await supabaseClient
+            .from('user_data')
+            .update(updates)
+            .eq('id', userId)
+            .select()
+            .maybeSingle();
+
+        if (updateError) throw updateError;
+        if (!data) {
+            showToast('فشل تحديث بيانات المندوب', 'error');
+            return;
+        }
+
+        // إرسال إشعار للمندوب بقبوله
+        await sendNotification(
+            userId,
+            '🎉 تم قبول طلب الانضمام كمندوب',
+            `مبروك! تم قبول طلبك للعمل كمندوب في مركز ${deliveryData.center || 'غير محدد'}. يمكنك الآن استلام الطلبات المتاحة.`
+        );
+
+        showToast(`تم قبول المندوب ${deliveryData.name || ''} بنجاح`, 'success');
+        
+        // تحديث قوائم المناديب في لوحة المؤسس
         await loadPendingDeliveries();
-        if (typeof displayAllDeliveryPersons === 'function') await displayAllDeliveryPersons();
+        if (typeof displayAllDeliveryPersons === 'function') {
+            await displayAllDeliveryPersons();
+        }
+        
+        // إذا كان المندوب مسجل الدخول حاليًا، يمكننا تحديث حالة المستخدم في appState
+        if (appState.user && appState.user.id === userId) {
+            // تحديث userData للمندوب الحالي
+            appState.userData.status = 'approved';
+            // تحديث واجهة المندوب إذا كان مفتوحًا
+            if (appState.currentScreen === 'deliveryDashboardScreen') {
+                if (typeof refreshDeliveryDashboard === 'function') {
+                    await refreshDeliveryDashboard();
+                }
+            }
+        }
+
     } catch(err) {
-        showToast(err.message, 'error');
+        console.error('❌ خطأ في قبول المندوب:', err);
+        showToast(err.message || 'حدث خطأ أثناء قبول المندوب', 'error');
     } finally {
         showLoading(false);
     }
 }
+
 async function rejectDeliveryPerson(userId) {
     if (!confirm('هل أنت متأكد من رفض هذا المندوب؟ سيتم حذف حسابه.')) return;
     showLoading(true);

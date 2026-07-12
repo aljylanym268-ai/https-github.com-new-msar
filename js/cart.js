@@ -97,6 +97,7 @@ function closeCheckoutModal() { document.getElementById('checkoutModal').classLi
 // ========== إنشاء طلب ==========
 async function createOrder(productId, quantity, totalPrice, sellerId, customerName, customerPhone, shippingAddress, center, deliveryFee = 0) {
     if (!appState.user) throw new Error('يجب تسجيل الدخول');
+    console.log(`📦 [createOrder] Creating order for product ${productId}, quantity ${quantity}, total ${totalPrice}`);
     const { data, error } = await supabaseClient.from('orders').insert({
         buyer_id: appState.user.id,
         seller_id: sellerId,
@@ -113,6 +114,7 @@ async function createOrder(productId, quantity, totalPrice, sellerId, customerNa
     }).select().maybeSingle();
     if (error) throw error;
     if (data) {
+        console.log(`✅ [createOrder] Order created with ID: ${data.id}`);
         await sendNotification(sellerId, 'طلب جديد', `لديك طلب جديد من ${customerName}`, { order_id: data.id });
     }
     return data;
@@ -223,7 +225,16 @@ async function loadBuyerOrdersWithTimeline() {
                 <a href="https://wa.me/${order.delivery.phone || ''}" target="_blank" style="color:#25D366;"><i class="fab fa-whatsapp"></i></a>
             </div>`;
         }
-        card.innerHTML = `<div class="order-header"><span class="order-id">#${order.id.slice(0,8)}</span><span class="order-status ${order.status}">${getStatusText(order.status)}</span></div><div>${escapeHTML(product.name)} - ${order.quantity} × ${(order.total_price - (order.delivery_fee || 0)) / order.quantity} ج.م</div><div>رسوم التوصيل: ${order.delivery_fee || 0} ج.م</div><div class="order-timeline" style="margin-top:15px;">${timeline}</div>${deliveryHtml}${order.status === 'pending' ? `<button class="add-to-cart" onclick="cancelOrder('${order.id}')">إلغاء الطلب</button>` : ''}`;
+        // عرض OTP للعميل إذا كانت الحالة in_delivery
+        let otpDisplay = '';
+        if (order.status === 'in_delivery' && order.otp_code) {
+            otpDisplay = `<div style="margin-top:10px;padding:12px;background:#fff3cd;border-radius:8px;border:2px solid #ffc107;text-align:center;font-weight:bold;">
+                <i class="fas fa-key" style="color:#d39e00;"></i> 
+                رمز تأكيد الاستلام: <span style="color:#d39e00;font-size:1.4rem;">${escapeHTML(order.otp_code)}</span>
+                <div style="font-size:0.8rem;margin-top:4px;">أعط هذا الرمز للمندوب عند استلام الطلب</div>
+            </div>`;
+        }
+        card.innerHTML = `<div class="order-header"><span class="order-id">#${order.id.slice(0,8)}</span><span class="order-status ${order.status}">${getStatusText(order.status)}</span></div><div>${escapeHTML(product.name)} - ${order.quantity} × ${(order.total_price - (order.delivery_fee || 0)) / order.quantity} ج.م</div><div>رسوم التوصيل: ${order.delivery_fee || 0} ج.م</div><div class="order-timeline" style="margin-top:15px;">${timeline}</div>${otpDisplay}${deliveryHtml}${order.status === 'pending' ? `<button class="add-to-cart" onclick="cancelOrder('${order.id}')">إلغاء الطلب</button>` : ''}`;
         container.appendChild(card);
     });
 }
@@ -248,9 +259,14 @@ async function loadSellerOrders(sellerId) {
 
 // ========== تحديث حالة الطلب (مع maybeSingle) ==========
 async function updateOrderStatus(orderId, status, extraData = {}) {
+    console.log(`🔄 [updateOrderStatus] Updating order ${orderId} to status ${status}`);
     const updates = { status, ...extraData };
     const { data, error } = await supabaseClient.from('orders').update(updates).eq('id', orderId).select().maybeSingle();
-    if (error) throw error;
+    if (error) {
+        console.error('❌ [updateOrderStatus] Error:', error);
+        throw error;
+    }
+    console.log('✅ [updateOrderStatus] Result:', data);
     return data;
 }
 
@@ -332,39 +348,98 @@ async function loadMyDeliveryOrders() {
     } catch (error) { console.error('Error loading my delivery orders:', error); return []; } 
 }
 
-async function claimOrder(orderId) { 
-    if (!appState.user) return; 
-    showLoading(true); 
-    try { 
-        const { data: order, error } = await supabaseClient
+// ========== دوال المندوب المُحسَّنة مع التحقق من المعرف ==========
+function isValidOrderId(id) {
+    return id && id !== 'null' && id !== 'undefined' && id.trim() !== '';
+}
+
+async function claimOrder(orderId) {
+    // التحقق من صحة المعرف
+    if (!isValidOrderId(orderId)) {
+        console.error('❌ [claimOrder] Invalid orderId:', orderId);
+        showToast('معرف الطلب غير صحيح', 'error');
+        return;
+    }
+    if (!appState.user) {
+        showToast('يجب تسجيل الدخول أولاً', 'warning');
+        return;
+    }
+    showLoading(true);
+    try {
+        console.log(`🔍 [claimOrder] Attempting to claim order ${orderId} by delivery ${appState.user.id}`);
+        // 1. جلب الطلب الحالي للتحقق
+        const { data: existingOrder, error: fetchError } = await supabaseClient
             .from('orders')
-            .update({ status: 'picked_up', delivery_id: appState.user.id })
+            .select('status, delivery_id')
             .eq('id', orderId)
-            .select()
             .maybeSingle();
-        if (error) throw error;
-        if (!order) {
-            showToast('الطلب غير موجود أو لا يمكن تحديثه', 'error');
+        if (fetchError) {
+            console.error('❌ [claimOrder] Fetch error:', fetchError);
+            throw fetchError;
+        }
+        if (!existingOrder) {
+            console.warn(`⚠️ [claimOrder] Order ${orderId} not found`);
+            showToast('الطلب غير موجود', 'error');
+            return;
+        }
+        console.log(`🔍 [claimOrder] Order ${orderId} status: ${existingOrder.status}, delivery_id: ${existingOrder.delivery_id}`);
+
+        // 2. التأكد من أن الطلب في حالة مناسبة وغير مخصص لمندوب آخر
+        if (existingOrder.delivery_id !== null) {
+            console.warn(`⚠️ [claimOrder] Order ${orderId} already has delivery_id ${existingOrder.delivery_id}`);
+            showToast('هذا الطلب تم استلامه بالفعل', 'warning');
+            return;
+        }
+        if (!['confirmed', 'prepared'].includes(existingOrder.status)) {
+            console.warn(`⚠️ [claimOrder] Order ${orderId} status is ${existingOrder.status}, not ready for pickup`);
+            showToast(`الطلب ليس جاهزاً للاستلام (الحالة: ${existingOrder.status})`, 'warning');
             return;
         }
 
+        // 3. تحديث الطلب مع شروط إضافية لتجنب حالات السباق
+        const { data: updatedOrder, error: updateError } = await supabaseClient
+            .from('orders')
+            .update({ status: 'picked_up', delivery_id: appState.user.id })
+            .eq('id', orderId)
+            .is('delivery_id', null) // تأكد من أنه لا يزال غير مخصص
+            .in('status', ['confirmed', 'prepared']) // تأكد من الحالة
+            .select()
+            .maybeSingle();
+
+        if (updateError) {
+            console.error(`❌ [claimOrder] Update error for order ${orderId}:`, updateError);
+            throw updateError;
+        }
+        if (!updatedOrder) {
+            // قد يكون الطلب قد تغير أثناء المعالجة
+            console.warn(`⚠️ [claimOrder] Order ${orderId} was not updated (maybe already taken or status changed)`);
+            showToast('فشل تحديث الطلب، ربما تم استلامه من قبل مندوب آخر أو تغيرت حالته', 'error');
+            return;
+        }
+        console.log(`✅ [claimOrder] Order ${orderId} claimed successfully by delivery ${appState.user.id}`);
+
+        // إشعارات
         const deliveryPerson = appState.userData;
-
-        // إشعار للعميل
-        await sendNotification(order.buyer_id, 'تم استلام طلبك بواسطة مندوب', 
+        await sendNotification(updatedOrder.buyer_id, 'تم استلام طلبك بواسطة مندوب', 
             `المندوب ${deliveryPerson.name || ''} استلم طلبك #${orderId.slice(0,8)}`);
-
-        // إشعار للبائع
-        await sendNotification(order.seller_id, 'تم استلام الطلب بواسطة مندوب', 
+        await sendNotification(updatedOrder.seller_id, 'تم استلام الطلب بواسطة مندوب', 
             `المندوب ${deliveryPerson.name || ''} استلم طلب #${orderId.slice(0,8)}`);
 
         showToast('تم استلام الطلب بنجاح', 'success'); 
         await refreshDeliveryDashboard(); 
-    } catch (err) { showToast(err.message, 'error'); } 
-    finally { showLoading(false); } 
+    } catch (err) {
+        console.error(`❌ [claimOrder] Unexpected error for order ${orderId}:`, err);
+        showToast(err.message, 'error');
+    } finally {
+        showLoading(false);
+    }
 }
 
 async function rejectOrderByDelivery(orderId) {
+    if (!isValidOrderId(orderId)) {
+        showToast('معرف الطلب غير صحيح', 'error');
+        return;
+    }
     if (!appState.user) return;
     if (!confirm('هل أنت متأكد من رفض هذا الطلب؟')) return;
     showLoading(true);
@@ -390,6 +465,10 @@ async function rejectOrderByDelivery(orderId) {
 }
 
 async function pickupFromSeller(orderId) {
+    if (!isValidOrderId(orderId)) {
+        showToast('معرف الطلب غير صحيح', 'error');
+        return;
+    }
     if (!appState.user) return;
     showLoading(true);
     try {
@@ -415,6 +494,10 @@ async function pickupFromSeller(orderId) {
 }
 
 async function startDelivery(orderId) {
+    if (!isValidOrderId(orderId)) {
+        showToast('معرف الطلب غير صحيح', 'error');
+        return;
+    }
     showLoading(true);
     try {
         const otp = generateOTP(6);
@@ -452,6 +535,10 @@ async function startDelivery(orderId) {
 }
 
 async function completeDelivery(orderId, otpEntered) {
+    if (!isValidOrderId(orderId)) {
+        showToast('معرف الطلب غير صحيح', 'error');
+        return;
+    }
     if (!otpEntered) {
         showToast('يرجى إدخال رمز التأكيد', 'warning');
         return;
@@ -470,18 +557,34 @@ async function completeDelivery(orderId, otpEntered) {
             return;
         }
 
+        // إذا لم يكن هناك رمز، قم بإنشاء رمز جديد تلقائيًا (حالة نادرة)
         if (!order.otp_code) {
-            showToast('لم يتم إنشاء رمز للتأكيد بعد', 'error');
+            const newOtp = generateOTP(6);
+            const expiry = new Date(Date.now() + 30 * 60 * 1000);
+            const { data: updatedOrder, error: updateError } = await supabaseClient
+                .from('orders')
+                .update({ otp_code: newOtp, otp_expiry: expiry })
+                .eq('id', orderId)
+                .select()
+                .maybeSingle();
+            if (updateError) throw updateError;
+            if (!updatedOrder) {
+                showToast('فشل تحديث رمز التحقق', 'error');
+                return;
+            }
+            await sendNotification(order.buyer_id, 'رمز التحقق', `رمز التحقق الخاص بطلبك: ${newOtp}`);
+            showToast('تم إنشاء رمز تحقق جديد وإرساله للعميل، يرجى إدخاله', 'success');
+            return; // يطلب من المندوب إدخال الرمز الجديد
+        }
+
+        // التحقق من الصلاحية
+        if (new Date(order.otp_expiry) < new Date()) {
+            showToast('انتهت صلاحية الرمز، يرجى طلب رمز جديد', 'error');
             return;
         }
 
         if (order.otp_code !== otpEntered) {
             showToast('رمز التأكيد غير صحيح', 'error');
-            return;
-        }
-
-        if (new Date(order.otp_expiry) < new Date()) {
-            showToast('انتهت صلاحية الرمز، يرجى طلب رمز جديد', 'error');
             return;
         }
 
