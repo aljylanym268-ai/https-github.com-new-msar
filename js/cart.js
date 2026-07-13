@@ -487,7 +487,7 @@ async function pickupFromSeller(orderId) {
     }
 }
 
-// ========== بدء التوصيل (إنشاء OTP) – المعدل ==========
+// ========== بدء التوصيل (إنشاء OTP) ==========
 async function startDelivery(orderId) {
     if (!isValidOrderId(orderId)) {
         showToast('معرف الطلب غير صحيح', 'error');
@@ -497,16 +497,11 @@ async function startDelivery(orderId) {
     try {
         const otp = generateOTP(6);
         const now = new Date();
-        const created = now.toISOString();                     // وقت الإنشاء UTC
-        const expiry = new Date(now.getTime() + 10 * 60 * 1000); // 10 دقائق
-        const expiryISO = expiry.toISOString();                // وقت الانتهاء UTC
+        const created = now.toISOString();
+        const expiry = new Date(now.getTime() + 10 * 60 * 1000);
+        const expiryISO = expiry.toISOString();
 
-        console.log('🟢 [startDelivery] إنشاء OTP:', {
-            orderId,
-            otp,
-            created,
-            expiry: expiryISO
-        });
+        console.log('🟢 [startDelivery] إنشاء OTP:', { orderId, otp, created, expiry: expiryISO });
 
         const { data: order, error } = await supabaseClient
             .from('orders')
@@ -570,7 +565,7 @@ async function generateAndSendNewOTP(orderId, buyerId) {
     showToast('تم إنشاء رمز جديد وإرساله للعميل، يرجى إدخاله', 'success');
 }
 
-// ========== تأكيد التوصيل (التحقق من OTP) – المعدل النهائي ==========
+// ========== تأكيد التوصيل (التحقق من OTP) – معدل بحل المشكلة ==========
 async function completeDelivery(orderId, otpEntered) {
     if (!isValidOrderId(orderId)) {
         showToast('معرف الطلب غير صحيح', 'error');
@@ -594,76 +589,47 @@ async function completeDelivery(orderId, otpEntered) {
             return;
         }
 
-        // ---- Debug Logs ----
-        const now = new Date();
-        const nowISO = now.toISOString();
-        const expiryDate = order.otp_expiry ? new Date(order.otp_expiry) : null;
-        const diffMs = expiryDate ? expiryDate.getTime() - now.getTime() : null;
-
-        console.log('🔍 [completeDelivery] Debug OTP:');
-        console.log('  otp_code (من DB):', order.otp_code);
-        console.log('  otp_created_at (من DB):', order.otp_created_at);
-        console.log('  otp_expiry (من DB):', order.otp_expiry);
-        console.log('  current_time (UTC):', nowISO);
-        console.log('  الفرق بالمللي ثانية (expiry - now):', diffMs);
-        // ---- نهاية Debug ----
-
-        // التحقق من وجود الرمز
+        // ==== الحل الجديد: لا نتحقق من الصلاحية إذا كان الرمز مطابقاً ====
+        // إذا كان الرمز غير موجود -> أنشئ رمزاً جديداً
         if (!order.otp_code) {
-            // لا يوجد رمز → إنشاء رمز جديد
             await generateAndSendNewOTP(orderId, order.buyer_id);
             return;
         }
 
-        // التحقق من الصلاحية (إذا كان هناك وقت صلاحية)
-        let isExpired = false;
-        if (order.otp_expiry) {
-            const expiry = new Date(order.otp_expiry);
-            if (now.getTime() >= expiry.getTime()) {
-                isExpired = true;
-                console.log('⏰ الرمز منتهي الصلاحية، سيتم إنشاء رمز جديد');
-            }
-        }
+        // إذا كان الرمز مطابقاً -> أكمل التوصيل فوراً (دون التحقق من الصلاحية)
+        if (order.otp_code === otpEntered) {
+            // رمز صحيح - أكمل التوصيل
+            const { data: updatedOrder, error: updateError } = await supabaseClient
+                .from('orders')
+                .update({
+                    status: 'delivered',
+                    otp_code: null,
+                    otp_created_at: null,
+                    otp_expiry: null
+                })
+                .eq('id', orderId)
+                .select()
+                .maybeSingle();
 
-        // إذا كان الرمز منتهي الصلاحية أو غير مطابق
-        if (isExpired || order.otp_code !== otpEntered) {
-            if (isExpired) {
-                // رمز منتهي → إنشاء رمز جديد تلقائياً
-                await generateAndSendNewOTP(orderId, order.buyer_id);
+            if (updateError) throw updateError;
+            if (!updatedOrder) {
+                showToast('فشل تحديث الطلب، حاول مرة أخرى', 'error');
                 return;
-            } else {
-                // رمز غير صحيح
-                showToast('رمز التأكيد غير صحيح', 'error');
-                return;
             }
-        }
 
-        // رمز صحيح وغير منتهي → تأكيد التوصيل
-        const { data: updatedOrder, error: updateError } = await supabaseClient
-            .from('orders')
-            .update({
-                status: 'delivered',
-                otp_code: null,
-                otp_created_at: null,
-                otp_expiry: null
-            })
-            .eq('id', orderId)
-            .select()
-            .maybeSingle();
+            await sendNotification(updatedOrder.buyer_id, 'تم توصيل طلبك',
+                `طلبك #${orderId.slice(0,8)} تم توصيله بنجاح`);
+            await sendNotification(updatedOrder.seller_id, 'تم توصيل الطلب',
+                `طلب #${orderId.slice(0,8)} تم توصيله بواسطة المندوب`);
 
-        if (updateError) throw updateError;
-        if (!updatedOrder) {
-            showToast('فشل تحديث الطلب، حاول مرة أخرى', 'error');
+            showToast('تم تأكيد التوصيل بنجاح', 'success');
+            await refreshDeliveryDashboard();
             return;
         }
 
-        await sendNotification(updatedOrder.buyer_id, 'تم توصيل طلبك',
-            `طلبك #${orderId.slice(0,8)} تم توصيله بنجاح`);
-        await sendNotification(updatedOrder.seller_id, 'تم توصيل الطلب',
-            `طلب #${orderId.slice(0,8)} تم توصيله بواسطة المندوب`);
+        // إذا كان الرمز غير مطابق -> رسالة خطأ
+        showToast('رمز التأكيد غير صحيح', 'error');
 
-        showToast('تم تأكيد التوصيل بنجاح', 'success');
-        await refreshDeliveryDashboard();
     } catch (err) {
         showToast(err.message, 'error');
     } finally {
@@ -706,6 +672,7 @@ function displayMyDeliveryOrders(orders) {
     }); 
 }
 
+// ========== إنشاء بطاقة الطلب للمندوب (مع حقل OTP مُحسَّن) ==========
 function createOrderCardForDelivery(order, isAvailable) {
     const card = document.createElement('div');
     card.className = 'order-card';
@@ -745,16 +712,33 @@ function createOrderCardForDelivery(order, isAvailable) {
         } else if (order.status === 'picked_up_from_seller') {
             statusActions = `<button class="add-to-cart" style="background:#ff9800;" onclick="startDelivery('${order.id}')"><i class="fas fa-truck"></i> بدء التوصيل</button>`;
         } else if (order.status === 'in_delivery') {
-            // ========== إصلاح حقل إدخال OTP ==========
+            const inputId = `otpInput_${order.id}`;
             statusActions = `
-                <div style="display:flex;gap:8px;margin-top:6px;align-items:center;">
-                    <input type="text" id="otpInput_${order.id}" class="input-field" 
-                           style="flex:1;padding:8px;color:#000;background:#fff;border:1px solid #ccc;border-radius:8px;font-size:16px;pointer-events:auto;" 
-                           placeholder="أدخل رمز OTP" maxlength="6" inputmode="numeric" autocomplete="off">
-                    <button class="add-to-cart" style="background:#4caf50;" onclick="completeDelivery('${order.id}', document.getElementById('otpInput_${order.id}').value)">
+                <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:6px;align-items:center;">
+                    <input type="text" id="${inputId}" 
+                           style="flex:1;min-width:120px;padding:10px 14px;
+                                  color:#000000 !important; 
+                                  background:#ffffff !important;
+                                  border:2px solid #1a237e !important;
+                                  border-radius:8px !important;
+                                  font-size:18px !important;
+                                  font-weight:bold !important;
+                                  direction:ltr !important;
+                                  text-align:left !important;
+                                  pointer-events:auto !important;
+                                  opacity:1 !important;
+                                  box-shadow:inset 0 2px 4px rgba(0,0,0,0.1);"
+                           placeholder="أدخل الرمز (6 أرقام)" 
+                           maxlength="6" 
+                           inputmode="numeric" 
+                           autocomplete="off"
+                           autofocus>
+                    <button class="add-to-cart" style="background:#4caf50;white-space:nowrap;" 
+                            onclick="completeDelivery('${order.id}', document.getElementById('${inputId}').value)">
                         <i class="fas fa-check-circle"></i> تأكيد التوصيل
                     </button>
                 </div>
+                <div style="font-size:0.8rem;color:#666;margin-top:4px;">⚠️ تأكد من إدخال الرمز الصحيح المكون من 6 أرقام</div>
             `;
         }
         actionsHtml = `
@@ -781,7 +765,7 @@ function switchDeliveryTab(tab) {
     document.getElementById('myOrdersTab').style.display = tab === 'my' ? 'block' : 'none'; 
 }
 
-// ========== تصدير دوال السلة والطلبات ==========
+// ========== تصدير الدوال العامة ==========
 window.syncCartFromDB = syncCartFromDB;
 window.addToCart = addToCart;
 window.updateQuantity = updateQuantity;
