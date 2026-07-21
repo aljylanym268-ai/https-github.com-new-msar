@@ -1098,7 +1098,6 @@
 
             // إذا كان المستخدم مؤسساً، قم بتحميل لوحة التحكم
             if (isFounder) {
-                // تأكد من تحميل الإحصائيات
                 setTimeout(() => {
                     if (typeof refreshFounderDashboard === 'function') {
                         refreshFounderDashboard();
@@ -1106,6 +1105,52 @@
                 }, 500);
             }
         }, 1500);
+
+        // ======== إضافة مستمع حالة المصادقة (التعديل الرئيسي) ========
+        supabaseClient.auth.onAuthStateChange(async (event, session) => {
+            if (event === 'SIGNED_IN' && session) {
+                // تسجيل الدخول ناجح
+                appState.user = {
+                    id: session.user.id,
+                    email: session.user.email,
+                    user_metadata: session.user.user_metadata
+                };
+                await loadUserData();
+                toggleLoginMenu(true);
+                const accountType = appState.userData?.account_type || 'client';
+                toggleSellerMenuItem(accountType === 'seller');
+                toggleDeliveryMenuItem(accountType === 'delivery');
+                toggleFounderMenuItem(accountType === 'founder');
+                await updateCartBadgeFromDB();
+
+                let targetScreen = 'homeScreen';
+                if (accountType === 'seller') targetScreen = 'sellerDashboardScreen';
+                else if (accountType === 'delivery') targetScreen = 'deliveryDashboardScreen';
+                else if (accountType === 'founder') targetScreen = 'founderDashboardScreen';
+                showScreen(targetScreen);
+                showToast('تم تسجيل الدخول بنجاح', 'success');
+
+                // تحديث معلومات المستخدم في الواجهة
+                updateUserInfo();
+                updateWelcomeLocation();
+                updateProfileLocation();
+            }
+
+            if (event === 'SIGNED_OUT') {
+                // تسجيل الخروج
+                appState.user = null;
+                appState.userData = {};
+                toggleLoginMenu(false);
+                toggleSellerMenuItem(false);
+                toggleDeliveryMenuItem(false);
+                toggleFounderMenuItem(false);
+                updateUserInfo(true);
+                await loadCart();
+                await updateCartBadgeFromDB();
+                showScreen('homeScreen');
+                showToast('تم تسجيل الخروج', 'info');
+            }
+        });
 
         // ======== ربط الأحداث ========
         // زر تسجيل الدخول
@@ -1216,7 +1261,6 @@
     window.togglePasswordVisibility = togglePasswordVisibility;
 
     // ======== استدعاء دوال لوحة المؤسس عند تبديل التبويب ========
-    // تعريف الدوال التي سيتم استدعاؤها من الأزرار
     window.switchFounderTab = function(tabId) {
         document.querySelectorAll('.founder-tab').forEach(tab => tab.classList.remove('active'));
         const activeTab = document.querySelector(`.founder-tab[data-tab="${tabId}"]`);
@@ -1225,7 +1269,6 @@
         const targetPanel = document.getElementById(`tab-${tabId}`);
         if (targetPanel) targetPanel.classList.add('active');
 
-        // تحميل البيانات حسب التبويب
         switch (tabId) {
             case 'dashboard': if (typeof refreshFounderDashboard === 'function') refreshFounderDashboard(); break;
             case 'deliveries': if (typeof loadDeliveriesTable === 'function') loadDeliveriesTable(); break;
@@ -1241,7 +1284,6 @@
         }
     };
 
-    // استدعاء التوابع التي قد تكون غير معرفة في البداية
     console.log('✅ تم تحميل جميع الدوال.');
 </script>
 </body>

@@ -220,11 +220,9 @@ async function getUserReview(productId, userId) {
 // إضافة أو تحديث تقييم
 async function upsertReview(reviewData) {
     const { product_id, user_id, order_id, rating, title, comment, images, video, is_verified_purchase } = reviewData;
-    // التحقق من وجود تقييم سابق
     const existing = await getUserReview(product_id, user_id);
     let result;
     if (existing) {
-        // تحديث
         const { data, error } = await supabaseClient
             .from('reviews')
             .update({
@@ -241,7 +239,6 @@ async function upsertReview(reviewData) {
         if (error) throw error;
         result = data;
     } else {
-        // إدراج جديد
         const { data, error } = await supabaseClient
             .from('reviews')
             .insert({
@@ -262,7 +259,6 @@ async function upsertReview(reviewData) {
         if (error) throw error;
         result = data;
     }
-    // تحديث إحصائيات المنتج (سيتم عبر trigger لكن نستدعيها احتياطاً)
     await updateProductRatingStats(product_id);
     return result;
 }
@@ -322,7 +318,6 @@ async function getReviewStats(productId) {
 // تسجيل إعجاب "مفيد"
 async function markReviewHelpful(reviewId, userId) {
     if (!userId) throw new Error('يجب تسجيل الدخول');
-    // التحقق من أن المستخدم لم يضغط على مفيد من قبل لهذا التقييم
     const { data: existing, error: checkError } = await supabaseClient
         .from('review_helpful')
         .select('id')
@@ -332,19 +327,16 @@ async function markReviewHelpful(reviewId, userId) {
     if (checkError) throw checkError;
     if (existing) throw new Error('لقد قمت بتحديد هذا التقييم كمفيد سابقاً');
 
-    // إضافة سجل
     const { error: insertError } = await supabaseClient
         .from('review_helpful')
         .insert({ review_id: reviewId, user_id: userId, created_at: new Date() });
     if (insertError) throw insertError;
 
-    // زيادة العدد في جدول التقييمات (استخدام RPC أو تحديث مباشر)
     const { error: updateError } = await supabaseClient
         .from('reviews')
         .update({ helpful_count: supabaseClient.rpc('increment_helpful_count', { review_id: reviewId }) })
         .eq('id', reviewId);
     if (updateError) {
-        // في حال عدم وجود الدالة، نقوم بالتحديث المباشر
         const { data: review } = await supabaseClient
             .from('reviews')
             .select('helpful_count')
@@ -409,7 +401,13 @@ async function signInWithEmail() {
     try {
         const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
         if (error) throw error;
+        // نجاح المصادقة – المستمع onAuthStateChange سيتولى التحديث
         showBearReaction(true);
+        // رسالة نجاح ستظهر عبر المستمع أيضاً، لكننا نضعها احتياطياً
+        showToast('تم تسجيل الدخول بنجاح', 'success');
+        // تنظيف الحقول
+        emailInput.value = '';
+        passwordInput.value = '';
     } catch (error) {
         showToast(error.message, 'error');
         showBearReaction(false);
@@ -579,19 +577,7 @@ async function signUpWithEmail() {
             } else {
                 showToast('تم إنشاء الحساب وتسجيل الدخول بنجاح!', 'success');
                 showBearReaction(true);
-                appState.user = { id: data.user.id, email: data.user.email, user_metadata: data.user.user_metadata };
-                await loadUserData();
-                toggleLoginMenu(true);
-                const isSeller = appState.userData?.account_type === 'seller';
-                const isDelivery = appState.userData?.account_type === 'delivery';
-                const isFounder = appState.userData?.account_type === 'founder';
-                toggleSellerMenuItem(isSeller);
-                toggleDeliveryMenuItem(isDelivery);
-                toggleFounderMenuItem(isFounder);
-                await updateCartBadgeFromDB();
-                if (isSeller) showScreen('sellerDashboardScreen');
-                else if (isDelivery) showScreen('deliveryDashboardScreen');
-                else showScreen('homeScreen');
+                // المستمع onAuthStateChange سيتولى التحديث
             }
         } catch (autoLoginErr) {
             console.warn('فشل تسجيل الدخول التلقائي:', autoLoginErr);
@@ -1635,7 +1621,6 @@ function saveSecuritySettings() {
 // ====== الإحصائيات ======
 async function getFounderStats() {
     try {
-        // جلب عدد المستخدمين حسب النوع
         const { data: users } = await supabaseClient.from('user_data').select('account_type, status');
         const totalUsers = users?.length || 0;
         const clients = users?.filter(u => u.account_type === 'client').length || 0;
@@ -1645,25 +1630,19 @@ async function getFounderStats() {
         const pendingDeliveries = users?.filter(u => u.account_type === 'delivery' && u.status === 'pending').length || 0;
         const suspendedDeliveries = users?.filter(u => u.account_type === 'delivery' && u.status === 'suspended').length || 0;
 
-        // الطلبات
         const { data: orders } = await supabaseClient.from('orders').select('status');
         const totalOrders = orders?.length || 0;
         const newOrders = orders?.filter(o => o.status === 'pending').length || 0;
         const inDeliveryOrders = orders?.filter(o => o.status === 'in_delivery').length || 0;
         const completedOrders = orders?.filter(o => o.status === 'delivered').length || 0;
 
-        // المنتجات
         const { data: products } = await supabaseClient.from('products').select('id');
         const totalProducts = products?.length || 0;
 
-        // العقارات
         const { data: properties } = await supabaseClient.from('properties').select('id');
         const totalProperties = properties?.length || 0;
 
-        // الخدمات (من جدول services الموجود في appState)
         const totalServices = appState.services?.length || 0;
-
-        // المتاجر (البائعين)
         const totalStores = sellers;
 
         return {
@@ -1708,14 +1687,11 @@ async function updateDeliveryStatus(userId, status) {
         .select()
         .maybeSingle();
     if (error) throw error;
-    // تسجيل النشاط
     await logActivity(appState.user.id, `update_delivery_status`, { user_id: userId, status });
     return data;
 }
 
 async function deleteDelivery(userId) {
-    // لا نحذف فعلياً، نضع الحالة "rejected" أو نحذف من جدول user_data حسب الرغبة
-    // لكن الأفضل تحديث الحالة إلى "rejected" أو "deleted"
     const { data, error } = await supabaseClient
         .from('user_data')
         .update({ status: 'rejected', updated_at: new Date() })
@@ -1770,7 +1746,6 @@ async function getAllSellers() {
         .eq('account_type', 'seller')
         .order('created_at', { ascending: false });
     if (error) throw error;
-    // جلب عدد المنتجات والطلبات والتقييم لكل بائع
     for (let seller of data) {
         const { count: productCount } = await supabaseClient
             .from('products')
@@ -1784,7 +1759,6 @@ async function getAllSellers() {
             .eq('seller_id', seller.id);
         seller.order_count = orderCount || 0;
 
-        // متوسط التقييم (من products)
         const { data: products } = await supabaseClient
             .from('products')
             .select('avg_rating')
@@ -1818,7 +1792,6 @@ async function getAllProductsAdmin() {
 }
 
 async function updateProductStatusAdmin(productId, status) {
-    // status: published, hidden, review, deleted
     const { data, error } = await supabaseClient
         .from('products')
         .update({ status, updated_at: new Date() })
@@ -1831,7 +1804,6 @@ async function updateProductStatusAdmin(productId, status) {
 }
 
 async function deleteProductAdmin(productId) {
-    // نضع الحالة "deleted" بدلاً من الحذف الفعلي
     const { data, error } = await supabaseClient
         .from('products')
         .update({ status: 'deleted', updated_at: new Date() })
@@ -1888,17 +1860,13 @@ async function deleteProperty(propertyId) {
     return data;
 }
 
-// ====== الخدمات (من جدول appState.services، لكن يمكن تخزينها في قاعدة البيانات) ======
-// سنضيف جدول services إذا لم يكن موجوداً، لكننا سنستخدم appState.services حالياً
-// ولكن نضيف دوال لتخزينها في قاعدة البيانات لتدوم.
+// ====== الخدمات ======
 async function getAllServices() {
-    // محاولة جلب من قاعدة البيانات
     const { data, error } = await supabaseClient
         .from('services')
         .select('*')
         .order('created_at', { ascending: false });
     if (!error && data) return data;
-    // fallback: استخدام appState.services
     return appState.services || [];
 }
 
@@ -2012,7 +1980,6 @@ async function sendBulkNotification(recipientType, title, message, specificEmail
         if (data?.length) userIds = [data[0].id];
         else throw new Error('المستخدم غير موجود');
     }
-    // إرسال الإشعارات لكل مستخدم
     for (const userId of userIds) {
         await sendNotification(userId, title, message);
     }
@@ -2030,7 +1997,6 @@ async function getAppSettings() {
 }
 
 async function saveAppSettings(settings) {
-    // settings: array of { setting_key, setting_value }
     for (const item of settings) {
         await supabaseClient
             .from('app_settings')
@@ -2075,7 +2041,6 @@ async function refreshFounderDashboard() {
     try {
         const stats = await getFounderStats();
         renderStatsGrid(stats);
-        // تحديث باقي الجداول حسب التاب النشط
         const activeTab = document.querySelector('.founder-tab.active');
         if (activeTab) {
             const tabId = activeTab.dataset.tab;
@@ -2092,7 +2057,6 @@ async function refreshFounderDashboard() {
                 case 'settings': loadSettingsForm(); break;
             }
         }
-        // تحديث إحصائيات المؤسس (صفحة المؤسس)
         await loadFounderStats();
     } catch (err) {
         showToast(err.message, 'error');
@@ -2101,14 +2065,11 @@ async function refreshFounderDashboard() {
     }
 }
 
-// دوال تحميل الجداول (سيتم تنفيذها في المنتجات أو السكريبت الرئيسي)
-// نضعها هنا مؤقتاً، لكن الأفضل نقلها إلى ملف منفصل أو إلى products.js
 window.switchFounderTab = function(tabId) {
     document.querySelectorAll('.founder-tab').forEach(tab => tab.classList.remove('active'));
     document.querySelector(`.founder-tab[data-tab="${tabId}"]`).classList.add('active');
     document.querySelectorAll('.founder-tab-panel').forEach(panel => panel.classList.remove('active'));
     document.getElementById(`tab-${tabId}`).classList.add('active');
-    // تحميل البيانات حسب التاب
     switch (tabId) {
         case 'dashboard': refreshFounderDashboard(); break;
         case 'deliveries': loadDeliveriesTable(); break;
