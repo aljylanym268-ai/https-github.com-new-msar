@@ -13,98 +13,25 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="icon" type="image/x-icon" href="https://i.ibb.co/XktM4crn/1767120438295.png">
     <link rel="stylesheet" href="style.css">
-    
-    <style>
-        .password-wrapper {
-            position: relative;
-            width: 100%;
-        }
-        .password-wrapper .input-field {
-            padding-left: 48px !important;
-            width: 100%;
-        }
-        .toggle-password {
-            position: absolute;
-            left: 16px;
-            top: 50%;
-            transform: translateY(-50%);
-            cursor: pointer;
-            color: #1a237e;
-            font-size: 1.3rem;
-            z-index: 5;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            width: 30px;
-            height: 30px;
-            border-radius: 50%;
-            background: transparent;
-            transition: color 0.2s, background 0.2s;
-        }
-        .toggle-password:hover {
-            background: rgba(26, 35, 126, 0.08);
-        }
-        .toggle-password i {
-            pointer-events: none;
-        }
-        .suspend-btn {
-            background: #ff9800;
-            color: white;
-            padding: 6px 14px;
-            border: none;
-            border-radius: 30px;
-            font-weight: 700;
-            cursor: pointer;
-            transition: var(--transition);
-        }
-        .suspend-btn:hover {
-            opacity: 0.85;
-        }
-        .delivery-person-info {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin-top: 10px;
-            padding: 8px;
-            background: #f5f7fa;
-            border-radius: 8px;
-        }
-        .delivery-person-info img {
-            width: 30px;
-            height: 30px;
-            border-radius: 50%;
-            object-fit: cover;
-        }
-        .delivery-person-info a {
-            color: #1a237e;
-            margin-right: 8px;
-            font-size: 1.2rem;
-        }
-        .delivery-person-info a.whatsapp {
-            color: #25D366;
-        }
-    </style>
 </head>
 <body>
 <div class="app-container">
     <div class="status-bar"></div>
     <div class="loading" id="loadingScreen"><div class="loading-spinner"></div><p>جاري تحميل التطبيق...</p></div>
 
-    <!-- ================= شاشة اختيار الموقع ================= -->
+    <!-- ========== شاشة اختيار الموقع ========== -->
     <div class="screen hidden" id="locationScreen">
         <div class="location-screen">
             <img src="https://i.ibb.co/XktM4crn/1767120438295.png" alt="Misar Systems" class="login-logo" loading="lazy">
             <div class="location-card">
                 <h1 class="location-title">📍 اختر موقعك</h1>
                 <p class="location-subtitle">لتقديم خدمات أفضل في منطقتك</p>
-                
                 <div class="input-group">
                     <label class="input-label">المحافظة</label>
                     <select class="location-select" id="governorateSelect" disabled>
                         <option value="قنا" selected>قنا</option>
                     </select>
-                </div>                          
-
+                </div>
                 <div class="input-group">
                     <label class="input-label">المركز</label>
                     <select class="location-select" id="centerSelect">
@@ -119,28 +46,23 @@
                         <option value="قفط">قفط</option>
                     </select>
                 </div>
-
                 <div class="input-group">
                     <label class="input-label">القرية</label>
                     <select class="location-select" id="villageSelect">
                         <option value="">اختر القرية</option>
                     </select>
                 </div>
-
                 <button class="location-btn" id="saveLocationBtn">
-                    <i class="fas fa-check-circle"></i>
-                    حفظ وبدء الاستخدام
+                    <i class="fas fa-check-circle"></i> حفظ وبدء الاستخدام
                 </button>
-
                 <div class="location-note">
-                    <i class="fas fa-info-circle"></i>
-                    يمكنك تغيير الموقع لاحقاً من الإعدادات
+                    <i class="fas fa-info-circle"></i> يمكنك تغيير الموقع لاحقاً من الإعدادات
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- ================= شاشة تسجيل الدخول ================= -->
+    <!-- ========== شاشة تسجيل الدخول ========== -->
     <div class="screen hidden" id="loginScreen">
         <div class="login-screen">
             <img src="https://i.ibb.co/XktM4crn/1767120438295.png" alt="Misar Systems" class="login-logo" loading="lazy">
@@ -187,7 +109,7 @@
         </div>
     </div>
 
-    <!-- ================= شاشة التسجيل ================= -->
+    <!-- ========== شاشة التسجيل ========== -->
     <div class="screen hidden" id="registerScreen">
         <div class="register-screen">
             <img src="https://i.ibb.co/XktM4crn/1767120438295.png" alt="Misar Systems" class="login-logo" loading="lazy">
@@ -213,16 +135,12 @@
                     <option value="seller">بائع</option>
                     <option value="delivery">مندوب</option>
                 </select>
-
-                <!-- حقل المحافظة -->
                 <div class="input-group">
                     <label class="input-label">المحافظة</label>
                     <select class="location-select" id="registerGovernorate">
                         <option value="قنا" selected>قنا</option>
-                        <!-- يمكن إضافة محافظات أخرى حسب الحاجة -->
                     </select>
                 </div>
-
                 <div id="deliveryCenterField" style="display:none;">
                     <div class="input-group">
                         <label class="input-label">المركز (للمندوبين)</label>
@@ -269,7 +187,7 @@
         </div>
     </div>
 
-    <!-- ================= الشاشة الرئيسية ================= -->
+    <!-- ========== الشاشة الرئيسية ========== -->
     <div class="screen hidden" id="homeScreen">
         <div class="app-header">
             <div class="header-content">
@@ -314,7 +232,7 @@
         </div>
     </div>
 
-    <!-- ================= شاشة المتجر ================= -->
+    <!-- ========== شاشة المتجر ========== -->
     <div class="screen hidden" id="marketScreen">
         <div class="app-header">
             <div class="header-content">
@@ -334,21 +252,41 @@
         </div>
     </div>
 
-    <!-- ================= شاشة السلة ================= -->
+    <!-- ========== شاشة السلة ========== -->
     <div class="screen hidden" id="cartScreen">
         <div class="app-header">
             <div class="header-content">
                 <div class="header-left"><button class="back-btn active" onclick="goBack()"><i class="fas fa-arrow-right"></i></button><div class="header-title">سلة التسوق</div></div>
+                <div class="header-actions">
+                    <button class="header-icon" onclick="loadCart()"><i class="fas fa-sync-alt"></i></button>
+                </div>
             </div>
+        </div>
+        <div class="cart-toolbar">
+            <button class="cart-tool-btn" onclick="toggleSelectAll()"><i class="fas fa-check-double"></i> تحديد الكل</button>
+            <button class="cart-tool-btn" onclick="deselectAll()"><i class="fas fa-times"></i> إلغاء التحديد</button>
+            <button class="cart-tool-btn danger" onclick="deleteSelected()"><i class="fas fa-trash"></i> حذف المحدد</button>
+            <span class="selected-count" id="selectedCount">0</span>
         </div>
         <div class="cart-items" id="cartItems"></div>
         <div class="cart-summary">
-            <div class="cart-total"><div class="total-label">الإجمالي:</div><div class="total-amount" id="cartTotal">0 ج.م</div></div>
+            <div class="cart-total">
+                <div class="total-label">المجموع الفرعي:</div>
+                <div class="total-amount" id="cartSubtotal">0 ج.م</div>
+            </div>
+            <div class="cart-total">
+                <div class="total-label">رسوم التوصيل:</div>
+                <div class="total-amount" id="cartDeliveryFee">0 ج.م</div>
+            </div>
+            <div class="cart-total" style="border-top:2px solid var(--gold); padding-top:10px;">
+                <div class="total-label" style="font-size:1.2rem;">الإجمالي:</div>
+                <div class="total-amount" id="cartTotal" style="font-size:1.8rem;">0 ج.م</div>
+            </div>
             <button class="checkout-btn" onclick="openCheckout()"><i class="fas fa-shopping-bag"></i> إتمام الشراء</button>
         </div>
     </div>
 
-    <!-- ================= شاشة الخدمات ================= -->
+    <!-- ========== شاشة الخدمات ========== -->
     <div class="screen hidden" id="servicesScreen">
         <div class="app-header">
             <div class="header-content">
@@ -358,7 +296,7 @@
         <div class="services-list" id="servicesList"></div>
     </div>
 
-    <!-- ================= شاشة الملف الشخصي ================= -->
+    <!-- ========== شاشة الملف الشخصي ========== -->
     <div class="screen hidden" id="profileScreen">
         <div class="app-header">
             <div class="header-content">
@@ -385,7 +323,6 @@
             <a href="#" class="menu-item" id="founderDashboardMenuItem" style="display:none;" onclick="showScreen('founderDashboardScreen')"><div class="menu-icon"><i class="fas fa-crown"></i></div><div class="menu-text">لوحة تحكم المؤسس</div><i class="fas fa-chevron-left menu-arrow"></i></a>
             <a href="#" class="menu-item" onclick="openLocationSettings()"><div class="menu-icon"><i class="fas fa-map-marker-alt"></i></div><div class="menu-text">تغيير المنطقة</div><i class="fas fa-chevron-left menu-arrow"></i></a>
             <a href="#" class="menu-item" onclick="showScreen('editProfileScreen')"><div class="menu-icon"><i class="fas fa-user-edit"></i></div><div class="menu-text">تعديل الملف الشخصي</div><i class="fas fa-chevron-left menu-arrow"></i></a>
-            <!-- زر تحديث بيانات يدوي -->
             <div style="padding: 0 5%; margin-top: 10px;">
                 <button class="login-btn" onclick="refreshUserDataManually()" style="background: linear-gradient(135deg, #1a237e, #0d47a1); padding: 12px;">
                     <i class="fas fa-sync-alt"></i> تحديث بياناتي
@@ -400,7 +337,7 @@
         </div>
     </div>
 
-    <!-- ================= شاشة تعديل الملف الشخصي ================= -->
+    <!-- ========== شاشة تعديل الملف الشخصي ========== -->
     <div class="screen hidden" id="editProfileScreen">
         <div class="app-header">
             <div class="header-content">
@@ -429,7 +366,7 @@
         </div>
     </div>
 
-    <!-- ================= شاشة تفاصيل المنتج ================= -->
+    <!-- ========== شاشة تفاصيل المنتج ========== -->
     <div class="screen hidden" id="productDetailScreen">
         <div class="app-header">
             <div class="header-content">
@@ -440,7 +377,7 @@
         <div class="products-section" style="padding-top:20px;"><div id="productDetailContent"></div></div>
     </div>
 
-    <!-- ================= شاشة متجر البائع ================= -->
+    <!-- ========== شاشة متجر البائع ========== -->
     <div class="screen hidden" id="storeScreen">
         <div class="app-header">
             <div class="header-content">
@@ -450,7 +387,7 @@
         <div id="storeContent"><div style="text-align:center; padding:50px;">جاري تحميل المتجر...</div></div>
     </div>
 
-    <!-- ================= شاشة لوحة البائع ================= -->
+    <!-- ========== شاشة لوحة البائع ========== -->
     <div class="screen hidden" id="sellerDashboardScreen">
         <div class="app-header">
             <div class="header-content">
@@ -552,7 +489,7 @@
         </div>
     </div>
 
-    <!-- ================= شاشة لوحة المندوب ================= -->
+    <!-- ========== شاشة لوحة المندوب ========== -->
     <div class="screen hidden" id="deliveryDashboardScreen">
         <div class="app-header">
             <div class="header-content">
@@ -577,42 +514,301 @@
         </div>
     </div>
 
-    <!-- ================= شاشة طلبات العميل ================= -->
+    <!-- ========== شاشة طلبات العميل ========== -->
     <div class="screen hidden" id="ordersScreen">
         <div class="app-header">
             <div class="header-content">
                 <div class="header-left"><button class="back-btn active" onclick="goBack()"><i class="fas fa-arrow-right"></i></button><div class="header-title">طلباتي</div></div>
+                <div class="header-actions">
+                    <button class="header-icon" onclick="loadBuyerOrdersWithTimeline()" title="تحديث"><i class="fas fa-sync-alt"></i></button>
+                </div>
+            </div>
+        </div>
+        <div class="orders-search-bar" style="padding:12px 5%; background:var(--sand); border-bottom:2px solid var(--gold);">
+            <div class="search-container" style="margin-bottom:10px;">
+                <i class="fas fa-search"></i>
+                <input type="text" id="ordersSearchInput" placeholder="ابحث برقم الطلب أو اسم المنتج..." oninput="filterBuyerOrders()">
+                <span class="clear-search" id="ordersClearSearch" onclick="document.getElementById('ordersSearchInput').value=''; filterBuyerOrders();" style="display:none;"><i class="fas fa-times-circle"></i></span>
+            </div>
+            <div class="filter-buttons" id="ordersFilterButtons" style="display:flex; flex-wrap:wrap; gap:6px;">
+                <button class="filter-btn active" data-status="all" onclick="setOrdersFilter('all', this)">الكل</button>
+                <button class="filter-btn" data-status="pending" onclick="setOrdersFilter('pending', this)">قيد الانتظار</button>
+                <button class="filter-btn" data-status="confirmed" onclick="setOrdersFilter('confirmed', this)">تم التأكيد</button>
+                <button class="filter-btn" data-status="prepared" onclick="setOrdersFilter('prepared', this)">تم التجهيز</button>
+                <button class="filter-btn" data-status="in_delivery" onclick="setOrdersFilter('in_delivery', this)">في الطريق</button>
+                <button class="filter-btn" data-status="delivered" onclick="setOrdersFilter('delivered', this)">تم التوصيل</button>
+                <button class="filter-btn" data-status="cancelled" onclick="setOrdersFilter('cancelled', this)">ملغي</button>
             </div>
         </div>
         <div class="orders-list" id="buyerOrdersList" style="padding:20px 5%;"></div>
+        <div class="orders-empty" id="ordersEmptyMessage" style="display:none; text-align:center; padding:50px 20px; color:#666;">
+            <div style="font-size:4rem; margin-bottom:20px;">📋</div>
+            <h3 style="color:#1a237e; margin-bottom:10px;">لا توجد طلبات مطابقة</h3>
+            <p>حاول تغيير كلمات البحث أو التصفية</p>
+        </div>
     </div>
 
-    <!-- ================= شاشة لوحة المؤسس ================= -->
+    <!-- ============================================================ -->
+    <!-- ========== شاشة لوحة المؤسس (المطورة) ========== -->
+    <!-- ============================================================ -->
     <div class="screen hidden" id="founderDashboardScreen">
         <div class="app-header">
             <div class="header-content">
                 <div class="header-left"><button class="back-btn active" onclick="goBack()"><i class="fas fa-arrow-right"></i></button><div class="header-title">لوحة تحكم المؤسس</div></div>
+                <div class="header-actions">
+                    <button class="header-icon" onclick="refreshFounderDashboard()" title="تحديث"><i class="fas fa-sync-alt"></i></button>
+                </div>
             </div>
         </div>
-        <div style="padding:20px 5%;">
-            <div class="founder-dashboard-card">
-                <div class="founder-dashboard-title"><i class="fas fa-crown" style="margin-left:10px;"></i> التحكم بصفحة المؤسس</div>
-                <div class="toggle-switch"><span><i class="fas fa-eye-slash"></i> إظهار/إخفاء الصفحة (للجميع)</span><label class="switch"><input type="checkbox" id="toggleFounderPage"><span class="slider"></span></label></div>
-                <div class="stats-row"><div class="stat-box"><div class="stat-number" id="founderViewsCount">0</div><div class="stat-label">عدد المشاهدات</div></div><div class="stat-box"><div class="stat-number" id="founderSharesTotal">0</div><div class="stat-label">إجمالي المشاركات</div></div></div>
-                <button class="refresh-stats-btn" onclick="refreshFounderStats()"><i class="fas fa-sync-alt"></i> تحديث الإحصائيات</button>
-            </div>
-            <div class="founder-dashboard-card">
-                <div class="founder-dashboard-title"><i class="fas fa-users"></i> طلبات انضمام المناديب</div>
-                <div id="pendingDeliveriesList" class="pending-deliveries-list"><p>جاري التحميل...</p></div>
-            </div>
-            <div class="founder-dashboard-card">
-                <div class="founder-dashboard-title"><i class="fas fa-users-cog"></i> إدارة المناديب</div>
-                <div id="allDeliveryPersonsList" class="pending-deliveries-list"><p>جاري التحميل...</p></div>
-            </div>
-        </div>
-    </div>
 
-    <!-- ================= شاشة المحفظة ================= -->
+        <!-- علامات التبويب -->
+        <div class="founder-tabs">
+            <button class="founder-tab active" data-tab="dashboard" onclick="switchFounderTab('dashboard')"><i class="fas fa-chart-pie"></i> لوحة التحكم</button>
+            <button class="founder-tab" data-tab="deliveries" onclick="switchFounderTab('deliveries')"><i class="fas fa-truck"></i> المناديب</button>
+            <button class="founder-tab" data-tab="customers" onclick="switchFounderTab('customers')"><i class="fas fa-users"></i> العملاء</button>
+            <button class="founder-tab" data-tab="sellers" onclick="switchFounderTab('sellers')"><i class="fas fa-store"></i> البائعين</button>
+            <button class="founder-tab" data-tab="products" onclick="switchFounderTab('products')"><i class="fas fa-boxes"></i> المنتجات</button>
+            <button class="founder-tab" data-tab="properties" onclick="switchFounderTab('properties')"><i class="fas fa-building"></i> العقارات</button>
+            <button class="founder-tab" data-tab="services" onclick="switchFounderTab('services')"><i class="fas fa-concierge-bell"></i> الخدمات</button>
+            <button class="founder-tab" data-tab="orders" onclick="switchFounderTab('orders')"><i class="fas fa-shopping-cart"></i> الطلبات</button>
+            <button class="founder-tab" data-tab="reports" onclick="switchFounderTab('reports')"><i class="fas fa-flag"></i> البلاغات</button>
+            <button class="founder-tab" data-tab="logs" onclick="switchFounderTab('logs')"><i class="fas fa-history"></i> سجل النشاط</button>
+            <button class="founder-tab" data-tab="notifications" onclick="switchFounderTab('notifications')"><i class="fas fa-bell"></i> الإشعارات</button>
+            <button class="founder-tab" data-tab="settings" onclick="switchFounderTab('settings')"><i class="fas fa-cog"></i> الإعدادات</button>
+        </div>
+
+        <!-- محتوى التبويبات -->
+        <div class="founder-tab-content">
+
+            <!-- تبويب لوحة التحكم -->
+            <div id="tab-dashboard" class="founder-tab-panel active">
+                <div class="founder-stats-grid" id="founderStatsGrid"></div>
+                <div style="margin-top:20px; text-align:center;">
+                    <button class="refresh-stats-btn" onclick="refreshFounderDashboard()"><i class="fas fa-sync-alt"></i> تحديث الإحصائيات</button>
+                </div>
+                <!-- بطاقات المؤسس القديمة -->
+                <div class="founder-dashboard-card" style="margin-top:20px;">
+                    <div class="founder-dashboard-title"><i class="fas fa-crown"></i> التحكم بصفحة المؤسس</div>
+                    <div class="toggle-switch"><span><i class="fas fa-eye-slash"></i> إظهار/إخفاء الصفحة (للجميع)</span><label class="switch"><input type="checkbox" id="toggleFounderPage"><span class="slider"></span></label></div>
+                    <div class="stats-row"><div class="stat-box"><div class="stat-number" id="founderViewsCount">0</div><div class="stat-label">عدد المشاهدات</div></div><div class="stat-box"><div class="stat-number" id="founderSharesTotal">0</div><div class="stat-label">إجمالي المشاركات</div></div></div>
+                    <button class="refresh-stats-btn" onclick="refreshFounderStats()"><i class="fas fa-sync-alt"></i> تحديث الإحصائيات</button>
+                </div>
+            </div>
+
+            <!-- تبويب المناديب -->
+            <div id="tab-deliveries" class="founder-tab-panel">
+                <div class="founder-toolbar">
+                    <div class="search-box"><i class="fas fa-search"></i><input type="text" id="deliverySearchInput" placeholder="ابحث بالاسم، الهاتف، المحافظة، المركز، الحالة..." oninput="filterDeliveries()"></div>
+                    <button class="filter-btn" onclick="filterDeliveriesByStatus('all')">الكل</button>
+                    <button class="filter-btn" onclick="filterDeliveriesByStatus('pending')">قيد المراجعة</button>
+                    <button class="filter-btn" onclick="filterDeliveriesByStatus('approved')">معتمد</button>
+                    <button class="filter-btn" onclick="filterDeliveriesByStatus('suspended')">موقوف</button>
+                    <button class="filter-btn" onclick="filterDeliveriesByStatus('rejected')">مرفوض</button>
+                </div>
+                <div id="deliveriesTableWrapper">
+                    <table class="founder-table" id="deliveriesTable">
+                        <thead>
+                            <tr><th>الصورة</th><th>الاسم</th><th>الهاتف</th><th>البريد</th><th>المحافظة</th><th>المركز</th><th>تاريخ التسجيل</th><th>آخر دخول</th><th>الحالة</th><th>الإجراءات</th></tr>
+                        </thead>
+                        <tbody id="deliveriesTableBody"></tbody>
+                    </table>
+                </div>
+                <div class="pagination" id="deliveriesPagination"></div>
+            </div>
+
+            <!-- تبويب العملاء -->
+            <div id="tab-customers" class="founder-tab-panel">
+                <div class="founder-toolbar">
+                    <div class="search-box"><i class="fas fa-search"></i><input type="text" id="customerSearchInput" placeholder="ابحث بالاسم، الهاتف، البريد..." oninput="filterCustomers()"></div>
+                </div>
+                <div id="customersTableWrapper">
+                    <table class="founder-table" id="customersTable">
+                        <thead>
+                            <tr><th>الصورة</th><th>الاسم</th><th>الهاتف</th><th>البريد</th><th>عدد الطلبات</th><th>تاريخ التسجيل</th><th>الإجراءات</th></tr>
+                        </thead>
+                        <tbody id="customersTableBody"></tbody>
+                    </table>
+                </div>
+                <div class="pagination" id="customersPagination"></div>
+            </div>
+
+            <!-- تبويب البائعين -->
+            <div id="tab-sellers" class="founder-tab-panel">
+                <div class="founder-toolbar">
+                    <div class="search-box"><i class="fas fa-search"></i><input type="text" id="sellerSearchInput" placeholder="ابحث باسم المتجر أو البائع..." oninput="filterSellers()"></div>
+                    <button class="filter-btn" onclick="filterSellersByStatus('all')">الكل</button>
+                    <button class="filter-btn" onclick="filterSellersByStatus('approved')">نشط</button>
+                    <button class="filter-btn" onclick="filterSellersByStatus('suspended')">موقوف</button>
+                </div>
+                <div id="sellersTableWrapper">
+                    <table class="founder-table" id="sellersTable">
+                        <thead>
+                            <tr><th>صورة المتجر</th><th>اسم المتجر</th><th>اسم البائع</th><th>الهاتف</th><th>عدد المنتجات</th><th>عدد الطلبات</th><th>التقييم</th><th>تاريخ التسجيل</th><th>الإجراءات</th></tr>
+                        </thead>
+                        <tbody id="sellersTableBody"></tbody>
+                    </table>
+                </div>
+                <div class="pagination" id="sellersPagination"></div>
+            </div>
+
+            <!-- تبويب المنتجات -->
+            <div id="tab-products" class="founder-tab-panel">
+                <div class="founder-toolbar">
+                    <div class="search-box"><i class="fas fa-search"></i><input type="text" id="productSearchInput" placeholder="ابحث باسم المنتج، البائع، القسم..." oninput="filterProductsAdmin()"></div>
+                    <button class="filter-btn" onclick="filterProductsAdminByStatus('all')">الكل</button>
+                    <button class="filter-btn" onclick="filterProductsAdminByStatus('published')">منشور</button>
+                    <button class="filter-btn" onclick="filterProductsAdminByStatus('hidden')">مخفي</button>
+                    <button class="filter-btn" onclick="filterProductsAdminByStatus('review')">قيد المراجعة</button>
+                </div>
+                <div id="productsTableWrapper">
+                    <table class="founder-table" id="productsTable">
+                        <thead>
+                            <tr><th>الصورة</th><th>اسم المنتج</th><th>البائع</th><th>المتجر</th><th>القسم</th><th>السعر</th><th>الحالة</th><th>تاريخ الإضافة</th><th>الإجراءات</th></tr>
+                        </thead>
+                        <tbody id="productsTableBody"></tbody>
+                    </table>
+                </div>
+                <div class="pagination" id="productsPagination"></div>
+            </div>
+
+            <!-- تبويب العقارات -->
+            <div id="tab-properties" class="founder-tab-panel">
+                <div class="founder-toolbar">
+                    <div class="search-box"><i class="fas fa-search"></i><input type="text" id="propertySearchInput" placeholder="ابحث باسم العقار، المالك، المدينة..." oninput="filterProperties()"></div>
+                    <button class="filter-btn" onclick="filterPropertiesByStatus('all')">الكل</button>
+                    <button class="filter-btn" onclick="filterPropertiesByStatus('available')">متاح</button>
+                    <button class="filter-btn" onclick="filterPropertiesByStatus('reserved')">محجوز</button>
+                    <button class="filter-btn" onclick="filterPropertiesByStatus('sold')">مباع</button>
+                    <button class="filter-btn" onclick="filterPropertiesByStatus('hidden')">مخفي</button>
+                </div>
+                <div id="propertiesTableWrapper">
+                    <table class="founder-table" id="propertiesTable">
+                        <thead>
+                            <tr><th>الصورة</th><th>اسم العقار</th><th>المالك</th><th>السعر</th><th>المدينة</th><th>الحالة</th><th>الإجراءات</th></tr>
+                        </thead>
+                        <tbody id="propertiesTableBody"></tbody>
+                    </table>
+                </div>
+                <div class="pagination" id="propertiesPagination"></div>
+                <button class="add-btn" onclick="showAddPropertyForm()"><i class="fas fa-plus"></i> إضافة عقار</button>
+            </div>
+
+            <!-- تبويب الخدمات -->
+            <div id="tab-services" class="founder-tab-panel">
+                <div class="founder-toolbar">
+                    <div class="search-box"><i class="fas fa-search"></i><input type="text" id="serviceSearchInput" placeholder="ابحث باسم الخدمة..." oninput="filterServicesAdmin()"></div>
+                </div>
+                <div id="servicesTableWrapper">
+                    <table class="founder-table" id="servicesTable">
+                        <thead>
+                            <tr><th>الاسم</th><th>الوصف</th><th>السعر</th><th>الحالة</th><th>الإجراءات</th></tr>
+                        </thead>
+                        <tbody id="servicesTableBody"></tbody>
+                    </table>
+                </div>
+                <div class="pagination" id="servicesPagination"></div>
+                <button class="add-btn" onclick="showAddServiceForm()"><i class="fas fa-plus"></i> إضافة خدمة</button>
+            </div>
+
+            <!-- تبويب الطلبات -->
+            <div id="tab-orders" class="founder-tab-panel">
+                <div class="founder-toolbar">
+                    <div class="search-box"><i class="fas fa-search"></i><input type="text" id="orderSearchInput" placeholder="ابحث برقم الطلب، اسم العميل، البائع، المندوب..." oninput="filterOrdersAdmin()"></div>
+                    <button class="filter-btn" onclick="filterOrdersAdminByStatus('all')">الكل</button>
+                    <button class="filter-btn" onclick="filterOrdersAdminByStatus('pending')">قيد الانتظار</button>
+                    <button class="filter-btn" onclick="filterOrdersAdminByStatus('confirmed')">مؤكد</button>
+                    <button class="filter-btn" onclick="filterOrdersAdminByStatus('prepared')">تم التجهيز</button>
+                    <button class="filter-btn" onclick="filterOrdersAdminByStatus('in_delivery')">قيد التوصيل</button>
+                    <button class="filter-btn" onclick="filterOrdersAdminByStatus('delivered')">مكتمل</button>
+                    <button class="filter-btn" onclick="filterOrdersAdminByStatus('cancelled')">ملغي</button>
+                </div>
+                <div id="ordersTableWrapper">
+                    <table class="founder-table" id="ordersTable">
+                        <thead>
+                            <tr><th>رقم الطلب</th><th>العميل</th><th>البائع</th><th>المندوب</th><th>قيمة الطلب</th><th>الحالة</th><th>تاريخ الطلب</th><th>الإجراءات</th></tr>
+                        </thead>
+                        <tbody id="ordersTableBody"></tbody>
+                    </table>
+                </div>
+                <div class="pagination" id="ordersPagination"></div>
+            </div>
+
+            <!-- تبويب البلاغات -->
+            <div id="tab-reports" class="founder-tab-panel">
+                <div class="founder-toolbar">
+                    <div class="search-box"><i class="fas fa-search"></i><input type="text" id="reportSearchInput" placeholder="ابحث بنوع البلاغ، المبلغ، السبب..." oninput="filterReports()"></div>
+                    <button class="filter-btn" onclick="filterReportsByStatus('all')">الكل</button>
+                    <button class="filter-btn" onclick="filterReportsByStatus('pending')">قيد المراجعة</button>
+                    <button class="filter-btn" onclick="filterReportsByStatus('approved')">مقبول</button>
+                    <button class="filter-btn" onclick="filterReportsByStatus('rejected')">مرفوض</button>
+                </div>
+                <div id="reportsTableWrapper">
+                    <table class="founder-table" id="reportsTable">
+                        <thead>
+                            <tr><th>المبلغ</th><th>نوع البلاغ</th><th>السبب</th><th>التاريخ</th><th>الحالة</th><th>الإجراءات</th></tr>
+                        </thead>
+                        <tbody id="reportsTableBody"></tbody>
+                    </table>
+                </div>
+                <div class="pagination" id="reportsPagination"></div>
+            </div>
+
+            <!-- تبويب سجل النشاط -->
+            <div id="tab-logs" class="founder-tab-panel">
+                <div class="founder-toolbar">
+                    <div class="search-box"><i class="fas fa-search"></i><input type="text" id="logSearchInput" placeholder="ابحث بنوع العملية، المسؤول..." oninput="filterLogs()"></div>
+                </div>
+                <div id="logsTableWrapper">
+                    <table class="founder-table" id="logsTable">
+                        <thead>
+                            <tr><th>المسؤول</th><th>نوع العملية</th><th>التفاصيل</th><th>التاريخ والوقت</th></tr>
+                        </thead>
+                        <tbody id="logsTableBody"></tbody>
+                    </table>
+                </div>
+                <div class="pagination" id="logsPagination"></div>
+            </div>
+
+            <!-- تبويب الإشعارات -->
+            <div id="tab-notifications" class="founder-tab-panel">
+                <div class="founder-card">
+                    <h3>إرسال إشعار</h3>
+                    <div class="input-group">
+                        <label class="input-label">العنوان</label>
+                        <input type="text" id="notificationTitle" class="input-field" placeholder="عنوان الإشعار">
+                    </div>
+                    <div class="input-group">
+                        <label class="input-label">الرسالة</label>
+                        <textarea id="notificationMessage" class="input-field" rows="4" placeholder="نص الإشعار"></textarea>
+                    </div>
+                    <div class="input-group">
+                        <label class="input-label">المستلمون</label>
+                        <select id="notificationRecipients" class="input-field">
+                            <option value="all">جميع المستخدمين</option>
+                            <option value="clients">العملاء فقط</option>
+                            <option value="sellers">البائعين فقط</option>
+                            <option value="deliveries">المناديب فقط</option>
+                            <option value="specific">مستخدم محدد (أدخل البريد)</option>
+                        </select>
+                        <input type="email" id="specificUserEmail" class="input-field" placeholder="البريد الإلكتروني للمستخدم" style="display:none; margin-top:8px;">
+                    </div>
+                    <button class="login-btn" onclick="sendBulkNotification()"><i class="fas fa-paper-plane"></i> إرسال الإشعار</button>
+                </div>
+            </div>
+
+            <!-- تبويب الإعدادات -->
+            <div id="tab-settings" class="founder-tab-panel">
+                <div class="founder-card">
+                    <h3>إعدادات التطبيق</h3>
+                    <div id="settingsForm"></div>
+                    <button class="login-btn" onclick="saveAllSettings()"><i class="fas fa-save"></i> حفظ الإعدادات</button>
+                </div>
+            </div>
+
+        </div> <!-- end founder-tab-content -->
+    </div> <!-- end founderDashboardScreen -->
+
+    <!-- ========== شاشات أخرى ========== -->
     <div class="screen hidden" id="walletScreen">
         <div class="app-header">
             <div class="header-content">
@@ -622,7 +818,6 @@
         <div style="text-align:center; padding:50px;"><i class="fas fa-wallet" style="font-size:4rem; color:#1a237e;"></i><h3 style="margin:20px 0;">المحفظة قيد التطوير</h3><p>سيتم إضافة هذه الميزة قريباً</p></div>
     </div>
 
-    <!-- ================= شاشات الفئات ================= -->
     <div class="screen hidden" id="electronicsScreen">
         <div class="app-header"><div class="header-content"><div class="header-left"><button class="back-btn active" onclick="goBack()"><i class="fas fa-arrow-right"></i></button><div class="header-title">إلكترونيات</div></div></div></div>
         <div class="products-section"><div class="products-grid" id="electronicsProducts"></div></div>
@@ -636,7 +831,7 @@
         <div class="products-section"><div class="products-grid" id="foodProducts"></div></div>
     </div>
 
-    <!-- ================= مودالات ================= -->
+    <!-- ========== مودالات عامة ========== -->
     <div id="checkoutModal" class="modal" onclick="if(event.target===this) closeCheckoutModal()">
         <div class="modal-content">
             <h3 style="color:#1a237e; margin-bottom:15px;">إتمام الطلب</h3>
@@ -650,31 +845,10 @@
     <div id="changePasswordModal" class="modal" onclick="if(event.target===this) closeModal('changePasswordModal')">
         <div class="modal-content">
             <h3 style="color:#1a237e; margin-bottom:15px;">تغيير كلمة المرور</h3>
-            <div class="input-group password-wrapper">
-                <label class="input-label">كلمة المرور الحالية</label>
-                <input type="password" id="oldPassword" class="input-field" placeholder="أدخل كلمة المرور الحالية">
-                <span class="toggle-password" onclick="togglePasswordVisibility('oldPassword', this)">
-                    <i class="fas fa-eye"></i>
-                </span>
-            </div>
-            <div class="input-group password-wrapper">
-                <label class="input-label">كلمة المرور الجديدة</label>
-                <input type="password" id="newPassword" class="input-field" placeholder="أدخل كلمة المرور الجديدة">
-                <span class="toggle-password" onclick="togglePasswordVisibility('newPassword', this)">
-                    <i class="fas fa-eye"></i>
-                </span>
-            </div>
-            <div class="input-group password-wrapper">
-                <label class="input-label">تأكيد كلمة المرور الجديدة</label>
-                <input type="password" id="confirmNewPassword" class="input-field" placeholder="أعد إدخال كلمة المرور الجديدة">
-                <span class="toggle-password" onclick="togglePasswordVisibility('confirmNewPassword', this)">
-                    <i class="fas fa-eye"></i>
-                </span>
-            </div>
-            <div style="display:flex; gap:10px; margin-top:20px;">
-                <button class="login-btn" style="flex:1;" onclick="changePassword()">تغيير</button>
-                <button class="google-btn" style="flex:1;" onclick="closeModal('changePasswordModal')">إلغاء</button>
-            </div>
+            <div class="input-group password-wrapper"><label class="input-label">كلمة المرور الحالية</label><input type="password" id="oldPassword" class="input-field" placeholder="أدخل كلمة المرور الحالية"><span class="toggle-password" onclick="togglePasswordVisibility('oldPassword', this)"><i class="fas fa-eye"></i></span></div>
+            <div class="input-group password-wrapper"><label class="input-label">كلمة المرور الجديدة</label><input type="password" id="newPassword" class="input-field" placeholder="أدخل كلمة المرور الجديدة"><span class="toggle-password" onclick="togglePasswordVisibility('newPassword', this)"><i class="fas fa-eye"></i></span></div>
+            <div class="input-group password-wrapper"><label class="input-label">تأكيد كلمة المرور الجديدة</label><input type="password" id="confirmNewPassword" class="input-field" placeholder="أعد إدخال كلمة المرور الجديدة"><span class="toggle-password" onclick="togglePasswordVisibility('confirmNewPassword', this)"><i class="fas fa-eye"></i></span></div>
+            <div style="display:flex; gap:10px; margin-top:20px;"><button class="login-btn" style="flex:1;" onclick="changePassword()">تغيير</button><button class="google-btn" style="flex:1;" onclick="closeModal('changePasswordModal')">إلغاء</button></div>
         </div>
     </div>
 
@@ -688,7 +862,103 @@
         </div>
     </div>
 
-    <!-- ================= أزرار إضافية وشات بوت ================= -->
+    <div id="directCheckoutModal" class="modal" onclick="if(event.target===this) closeDirectCheckout()">
+        <div class="modal-content">
+            <h3 style="color:#1a237e; margin-bottom:15px;"><i class="fas fa-bolt" style="color:#D4AF37;"></i> شراء الآن</h3>
+            <div class="input-group"><label class="input-label">الاسم الكامل *</label><input type="text" id="directName" class="input-field" placeholder="أدخل اسمك"></div>
+            <div class="input-group"><label class="input-label">رقم الهاتف *</label><input type="tel" id="directPhone" class="input-field" placeholder="أدخل رقم الهاتف"></div>
+            <div class="input-group"><label class="input-label">المحافظة *</label><select id="directGovernorate" class="input-field"><option value="قنا">قنا</option><option value="الأقصر">الأقصر</option><option value="أسوان">أسوان</option><option value="سوهاج">سوهاج</option><option value="أسيوط">أسيوط</option><option value="البحر الأحمر">البحر الأحمر</option></select></div>
+            <div class="input-group"><label class="input-label">المدينة / المركز *</label><input type="text" id="directCity" class="input-field" placeholder="مثال: قنا، نقادة، ..."></div>
+            <div class="input-group"><label class="input-label">العنوان بالتفصيل *</label><textarea id="directAddress" class="input-field" rows="2" placeholder="العنوان الكامل (شارع، منزل، ...)"></textarea></div>
+            <div class="input-group"><label class="input-label">ملاحظات (اختياري)</label><textarea id="directNotes" class="input-field" rows="2" placeholder="أي ملاحظات إضافية..."></textarea></div>
+            <div style="display:flex; gap:10px; margin-top:20px;"><button class="login-btn" style="flex:1; background: #D4AF37; color:#1a237e;" onclick="confirmDirectOrder()"><i class="fas fa-check-circle"></i> تأكيد الطلب</button><button class="google-btn" style="flex:1;" onclick="closeDirectCheckout()">إلغاء</button></div>
+        </div>
+    </div>
+
+    <div id="addReviewModal" class="modal" onclick="if(event.target===this) closeReviewModal()">
+        <div class="modal-content">
+            <h3 style="color:#1a237e; margin-bottom:15px;"><i class="fas fa-star" style="color:#D4AF37;"></i> <span id="reviewModalTitle">إضافة تقييم</span></h3>
+            <input type="hidden" id="reviewProductId"><input type="hidden" id="reviewId">
+            <div class="input-group"><label class="input-label">تقييمك (من 1 إلى 5 نجوم)</label><div class="star-rating" id="starRating"><span class="star" data-value="1">☆</span><span class="star" data-value="2">☆</span><span class="star" data-value="3">☆</span><span class="star" data-value="4">☆</span><span class="star" data-value="5">☆</span></div><input type="hidden" id="reviewRating" value="5"></div>
+            <div class="input-group"><label class="input-label">عنوان التقييم (اختياري)</label><input type="text" id="reviewTitle" class="input-field" placeholder="مثال: منتج رائع"></div>
+            <div class="input-group"><label class="input-label">تعليقك *</label><textarea id="reviewComment" class="input-field" rows="4" placeholder="اكتب تجربتك مع المنتج..."></textarea></div>
+            <div class="input-group"><label class="input-label">صور (حتى 5 صور)</label><input type="file" id="reviewImages" accept="image/*" multiple onchange="previewReviewImages(event)"><div class="review-media-preview" id="reviewImagesPreview"></div></div>
+            <div class="input-group"><label class="input-label">فيديو (اختياري، MP4/WebM)</label><input type="file" id="reviewVideo" accept="video/*" onchange="previewReviewVideo(event)"><div class="review-media-preview" id="reviewVideoPreview"></div></div>
+            <div style="display:flex; gap:10px; margin-top:20px;"><button class="login-btn" style="flex:1;" onclick="submitReview()"><i class="fas fa-paper-plane"></i> إرسال التقييم</button><button class="google-btn" style="flex:1;" onclick="closeReviewModal()">إلغاء</button></div>
+        </div>
+    </div>
+
+    <!-- ========== مودالات لوحة المؤسس ========== -->
+    <div id="confirmModal" class="modal" onclick="if(event.target===this) closeConfirmModal()">
+        <div class="modal-content" style="max-width:400px;">
+            <h3 style="color:#1a237e; margin-bottom:10px;">تأكيد العملية</h3>
+            <p id="confirmMessage" style="margin:15px 0;"></p>
+            <div style="display:flex; gap:10px; margin-top:20px;">
+                <button class="login-btn" style="flex:1; background:#e53935;" id="confirmActionBtn">تأكيد</button>
+                <button class="google-btn" style="flex:1;" onclick="closeConfirmModal()">إلغاء</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="detailsModal" class="modal" onclick="if(event.target===this) closeDetailsModal()">
+        <div class="modal-content" style="max-width:500px;">
+            <h3 style="color:#1a237e; margin-bottom:15px;">التفاصيل</h3>
+            <div id="detailsContent"></div>
+            <button class="google-btn" style="margin-top:15px;" onclick="closeDetailsModal()">إغلاق</button>
+        </div>
+    </div>
+
+    <div id="propertyModal" class="modal" onclick="if(event.target===this) closePropertyModal()">
+        <div class="modal-content">
+            <h3 style="color:#1a237e; margin-bottom:15px;" id="propertyModalTitle">إضافة عقار</h3>
+            <input type="hidden" id="editingPropertyId">
+            <div class="input-group"><label class="input-label">اسم العقار</label><input type="text" id="propertyName" class="input-field" placeholder="اسم العقار"></div>
+            <div class="input-group"><label class="input-label">الوصف</label><textarea id="propertyDescription" class="input-field" rows="3" placeholder="وصف العقار"></textarea></div>
+            <div class="input-group"><label class="input-label">السعر (ج.م)</label><input type="number" id="propertyPrice" class="input-field" placeholder="0.00" step="0.01"></div>
+            <div class="input-group"><label class="input-label">الموقع</label><input type="text" id="propertyLocation" class="input-field" placeholder="العنوان"></div>
+            <div class="input-group"><label class="input-label">المدينة</label><input type="text" id="propertyCity" class="input-field" placeholder="المدينة"></div>
+            <div class="input-group"><label class="input-label">المالك (البريد الإلكتروني)</label><input type="email" id="propertyOwnerEmail" class="input-field" placeholder="بريد المالك"></div>
+            <div class="input-group"><label class="input-label">صور العقار</label><input type="file" id="propertyImages" accept="image/*" multiple onchange="previewPropertyImages(event)"><div class="image-preview-list" id="propertyImagePreview"></div></div>
+            <div class="input-group"><label class="input-label">الحالة</label><select id="propertyStatus" class="input-field"><option value="available">متاح</option><option value="reserved">محجوز</option><option value="sold">مباع</option><option value="hidden">مخفي</option></select></div>
+            <div style="display:flex; gap:10px; margin-top:20px;"><button class="login-btn" style="flex:1;" onclick="saveProperty()">حفظ</button><button class="google-btn" style="flex:1;" onclick="closePropertyModal()">إلغاء</button></div>
+        </div>
+    </div>
+
+    <div id="serviceModal" class="modal" onclick="if(event.target===this) closeServiceModal()">
+        <div class="modal-content">
+            <h3 style="color:#1a237e; margin-bottom:15px;" id="serviceModalTitle">إضافة خدمة</h3>
+            <input type="hidden" id="editingServiceId">
+            <div class="input-group"><label class="input-label">اسم الخدمة</label><input type="text" id="serviceName" class="input-field" placeholder="اسم الخدمة"></div>
+            <div class="input-group"><label class="input-label">الوصف</label><textarea id="serviceDescription" class="input-field" rows="3" placeholder="وصف الخدمة"></textarea></div>
+            <div class="input-group"><label class="input-label">السعر</label><input type="text" id="servicePrice" class="input-field" placeholder="مثل: 100 ج.م"></div>
+            <div class="input-group"><label class="input-label">الأيقونة</label><input type="text" id="serviceIcon" class="input-field" placeholder="مثل: fas fa-tools"></div>
+            <div class="input-group"><label class="input-label">الحالة</label><select id="serviceStatus" class="input-field"><option value="active">نشط</option><option value="inactive">غير نشط</option></select></div>
+            <div style="display:flex; gap:10px; margin-top:20px;"><button class="login-btn" style="flex:1;" onclick="saveService()">حفظ</button><button class="google-btn" style="flex:1;" onclick="closeServiceModal()">إلغاء</button></div>
+        </div>
+    </div>
+
+    <div id="userEditModal" class="modal" onclick="if(event.target===this) closeUserEditModal()">
+        <div class="modal-content">
+            <h3 style="color:#1a237e; margin-bottom:15px;">تعديل بيانات المستخدم</h3>
+            <input type="hidden" id="editingUserId">
+            <div class="input-group"><label class="input-label">الاسم</label><input type="text" id="editUserName" class="input-field"></div>
+            <div class="input-group"><label class="input-label">الهاتف</label><input type="text" id="editUserPhone" class="input-field"></div>
+            <div class="input-group"><label class="input-label">المحافظة</label><input type="text" id="editUserGovernorate" class="input-field"></div>
+            <div class="input-group"><label class="input-label">المركز</label><input type="text" id="editUserCenter" class="input-field"></div>
+            <div style="display:flex; gap:10px; margin-top:20px;"><button class="login-btn" style="flex:1;" onclick="saveUserEdit()">حفظ</button><button class="google-btn" style="flex:1;" onclick="closeUserEditModal()">إلغاء</button></div>
+        </div>
+    </div>
+
+    <div id="orderStatusModal" class="modal" onclick="if(event.target===this) closeOrderStatusModal()">
+        <div class="modal-content">
+            <h3 style="color:#1a237e; margin-bottom:15px;">تغيير حالة الطلب</h3>
+            <input type="hidden" id="orderStatusOrderId">
+            <div class="input-group"><label class="input-label">الحالة الجديدة</label><select id="orderStatusSelectAdmin" class="input-field"><option value="pending">قيد الانتظار</option><option value="confirmed">مؤكد</option><option value="prepared">تم التجهيز</option><option value="in_delivery">قيد التوصيل</option><option value="delivered">مكتمل</option><option value="cancelled">ملغي</option></select></div>
+            <div style="display:flex; gap:10px; margin-top:20px;"><button class="login-btn" style="flex:1;" onclick="updateOrderStatusAdmin()">تحديث</button><button class="google-btn" style="flex:1;" onclick="closeOrderStatusModal()">إلغاء</button></div>
+        </div>
+    </div>
+
+    <!-- ========== شات بوت ومؤسس ========== -->
     <button class="chatbot-btn" onclick="openChatbot()"><i class="fas fa-robot"></i><span class="chatbot-badge" id="chatbotBadge">3</span></button>
     <div class="chatbot-screen" id="chatbotScreen">
         <div class="chatbot-header">
@@ -717,7 +987,7 @@
             <div class="founder-avatar" onclick="openImageModal()"><img src="https://i.ibb.co/Fb0bXv47/1b7c163c815821997ef4c0271269d86e-0.webp" alt="صورة المؤسس" loading="lazy"></div>
             <div class="founder-name">م / محمد سعد</div>
             <div class="founder-title">مهندس برمجيات مصري، مؤسس ورئيس شركة Misar Systems</div>
-            <div class="founder-bio"><i class="fas fa-quote-right"></i><p>تم تأسيس الشركة عام 2026 بهدف تطوير حلول رقمية حديثة تخدم المجتمع والأسواق المحلية في مسار.</p></div>
+            <div class="founder-bio"><i class="fas fa-quote-right"></i><p>تم تأسيس الشركة عام 2026 بهدف تطوير حلول رقمية حديثة تخدم المجتمع والأسواق المحلية في مصر.</p></div>
             <div class="founder-contact">
                 <a href="mailto:mohamed.saad@misar.com" class="contact-row"><div class="contact-icon"><i class="fas fa-envelope"></i></div><div class="contact-info"><div class="contact-label">البريد الإلكتروني</div><div class="contact-value">mohamed.saad@misar.com</div></div></a>
                 <a href="https://www.facebook.com/share/1DdQ5ezkjw/" target="_blank" class="contact-row"><div class="contact-icon"><i class="fab fa-facebook-f"></i></div><div class="contact-info"><div class="contact-label">فيسبوك</div><div class="contact-value">@mohammedsaad</div></div></a>
@@ -747,12 +1017,12 @@
         </div>
     </div>
 
-    <div class="image-modal" id="imageModal" onclick="closeImageModal(event)">
+    <div class="image-modal" id="founderImageModal" onclick="closeImageModal(event)">
         <div class="close-modal" onclick="closeImageModal(event)">×</div>
-        <div class="modal-content"><img src="" alt="صورة" id="modalImage"></div>
+        <div class="modal-content"><img src="" alt="صورة" id="founderModalImage"></div>
     </div>
 
-    <!-- ================= التنقل السفلي ================= -->
+    <!-- ========== التنقل السفلي ========== -->
     <div class="bottom-nav">
         <a href="#" class="nav-item active" onclick="showScreen('homeScreen')"><i class="fas fa-home nav-icon"></i><span class="nav-label">الرئيسية</span></a>
         <a href="#" class="nav-item" onclick="showScreen('marketScreen')"><i class="fas fa-shopping-bag nav-icon"></i><span class="nav-label">المتجر</span></a>
@@ -764,13 +1034,175 @@
     <div class="loading-overlay" id="loadingOverlay"><div class="loading-spinner-large"></div></div>
 </div>
 
+<!-- ========== ملفات الجافا سكريبت ========== -->
 <script src="js/supabase.js"></script>
 <script src="js/products.js"></script>
 <script src="js/product.js"></script>
 <script src="js/cart.js"></script>
 
 <script>
-    // ================= دالة إظهار وإخفاء كلمة المرور =================
+    // ======== التهيئة العامة ========
+    document.addEventListener('DOMContentLoaded', async function() {
+        console.log('🚀 تطبيق Misar Systems بدأ التحميل...');
+
+        // 1. تحميل الموقع المخزن
+        const savedLocation = localStorage.getItem('misarUserLocation');
+        if (savedLocation) {
+            try {
+                appState.location = JSON.parse(savedLocation);
+            } catch(e) {}
+        }
+
+        // 2. جلسة المستخدم
+        const { data: { session } } = await supabaseClient.auth.getSession();
+        if (session) {
+            const user = session.user;
+            appState.user = {
+                id: user.id,
+                email: user.email,
+                user_metadata: user.user_metadata
+            };
+            await loadUserData();
+            appState.currentScreen = appState.userData.account_type === 'seller' ? 'sellerDashboardScreen' :
+                                     (appState.userData.account_type === 'delivery' ? 'deliveryDashboardScreen' :
+                                     (appState.userData.account_type === 'founder' ? 'founderDashboardScreen' :
+                                     'homeScreen'));
+        } else {
+            appState.currentScreen = appState.location ? 'homeScreen' : 'locationScreen';
+        }
+
+        // 3. تحميل البيانات الأساسية
+        await loadProductsFromDB();
+        loadFeaturedProducts();
+        loadMarketProducts();
+        loadServices();
+        loadCart();
+        await updateCartBadgeFromDB();
+
+        // 4. إخفاء شاشة التحميل وعرض الشاشة المناسبة
+        setTimeout(() => {
+            document.getElementById('loadingScreen').style.display = 'none';
+            showScreen(appState.currentScreen);
+            if (appState.location) {
+                updateWelcomeLocation();
+                updateProfileLocation();
+            }
+            toggleLoginMenu(!!appState.user);
+            const isSeller = appState.userData?.account_type === 'seller';
+            const isDelivery = appState.userData?.account_type === 'delivery';
+            const isFounder = appState.userData?.account_type === 'founder';
+            toggleSellerMenuItem(isSeller);
+            toggleDeliveryMenuItem(isDelivery);
+            toggleFounderMenuItem(isFounder);
+            addInputInteractions();
+
+            // إذا كان المستخدم مؤسساً، قم بتحميل لوحة التحكم
+            if (isFounder) {
+                // تأكد من تحميل الإحصائيات
+                setTimeout(() => {
+                    if (typeof refreshFounderDashboard === 'function') {
+                        refreshFounderDashboard();
+                    }
+                }, 500);
+            }
+        }, 1500);
+
+        // ======== ربط الأحداث ========
+        // زر تسجيل الدخول
+        document.getElementById('loginBtn')?.addEventListener('click', function(e) {
+            e.preventDefault();
+            if (typeof signInWithEmail === 'function') signInWithEmail();
+            else showToast('حدث خطأ في النظام', 'error');
+        });
+
+        // زر التسجيل
+        document.getElementById('registerBtn')?.addEventListener('click', function(e) {
+            e.preventDefault();
+            if (typeof signUpWithEmail === 'function') signUpWithEmail();
+            else showToast('حدث خطأ في النظام', 'error');
+        });
+
+        // زر Google
+        document.getElementById('googleLoginBtn')?.addEventListener('click', function(e) {
+            e.preventDefault();
+            if (typeof signInWithGoogle === 'function') signInWithGoogle();
+            else showToast('حدث خطأ في النظام', 'error');
+        });
+
+        // روابط التبديل
+        document.getElementById('showRegisterLink')?.addEventListener('click', function(e) {
+            e.preventDefault();
+            showScreen('registerScreen');
+        });
+        document.getElementById('showLoginLink')?.addEventListener('click', function(e) {
+            e.preventDefault();
+            showScreen('loginScreen');
+        });
+
+        // حفظ الموقع
+        document.getElementById('saveLocationBtn')?.addEventListener('click', saveLocation);
+
+        // تحديث القرى عند تغيير المركز
+        const centerSelect = document.getElementById('centerSelect');
+        const villageSelect = document.getElementById('villageSelect');
+        if (centerSelect && villageSelect) {
+            centerSelect.addEventListener('change', function() {
+                const center = this.value;
+                if (!center) {
+                    villageSelect.innerHTML = '<option value="">اختر القرية</option>';
+                    villageSelect.disabled = true;
+                    return;
+                }
+                villageSelect.disabled = false;
+                loadVillagesForCenter(center, '');
+            });
+            if (appState.location?.center) {
+                centerSelect.value = appState.location.center;
+                villageSelect.disabled = false;
+                loadVillagesForCenter(appState.location.center, appState.location.village || '');
+            } else {
+                villageSelect.disabled = true;
+            }
+        }
+
+        // إعداد نجوم التقييم
+        document.querySelectorAll('.star').forEach(star => {
+            star.addEventListener('click', function() {
+                const value = parseInt(this.dataset.value);
+                document.getElementById('reviewRating').value = value;
+                document.querySelectorAll('.star').forEach(s => {
+                    s.textContent = parseInt(s.dataset.value) <= value ? '★' : '☆';
+                    s.style.color = parseInt(s.dataset.value) <= value ? '#D4AF37' : '#ccc';
+                });
+            });
+            star.addEventListener('mouseenter', function() {
+                const value = parseInt(this.dataset.value);
+                document.querySelectorAll('.star').forEach(s => {
+                    s.style.color = parseInt(s.dataset.value) <= value ? '#D4AF37' : '#ccc';
+                });
+            });
+            star.addEventListener('mouseleave', function() {
+                const selected = parseInt(document.getElementById('reviewRating').value) || 5;
+                document.querySelectorAll('.star').forEach(s => {
+                    s.style.color = parseInt(s.dataset.value) <= selected ? '#D4AF37' : '#ccc';
+                });
+            });
+        });
+
+        // مستمع تغيير نوع المستلم في الإشعارات
+        document.getElementById('notificationRecipients')?.addEventListener('change', function() {
+            const specificEmail = document.getElementById('specificUserEmail');
+            if (this.value === 'specific') {
+                specificEmail.style.display = 'block';
+            } else {
+                specificEmail.style.display = 'none';
+            }
+        });
+
+        console.log('✅ تم تحميل التطبيق بنجاح.');
+    });
+
+    // ======== دوال مساعدة ========
     function togglePasswordVisibility(inputId, toggleEl) {
         const input = document.getElementById(inputId);
         if (!input || !toggleEl) return;
@@ -783,250 +1215,34 @@
     }
     window.togglePasswordVisibility = togglePasswordVisibility;
 
-    // ================= تهيئة التطبيق مع مستمعات الأحداث =================
-    document.addEventListener('DOMContentLoaded', async () => {
-        // ---- تحميل الموقع المخزن ----
-        const savedLocation = localStorage.getItem('misarUserLocation');
-        if (savedLocation) appState.location = JSON.parse(savedLocation);
+    // ======== استدعاء دوال لوحة المؤسس عند تبديل التبويب ========
+    // تعريف الدوال التي سيتم استدعاؤها من الأزرار
+    window.switchFounderTab = function(tabId) {
+        document.querySelectorAll('.founder-tab').forEach(tab => tab.classList.remove('active'));
+        const activeTab = document.querySelector(`.founder-tab[data-tab="${tabId}"]`);
+        if (activeTab) activeTab.classList.add('active');
+        document.querySelectorAll('.founder-tab-panel').forEach(panel => panel.classList.remove('active'));
+        const targetPanel = document.getElementById(`tab-${tabId}`);
+        if (targetPanel) targetPanel.classList.add('active');
 
-        // ---- جلسة المستخدم الحالية ----
-        const { data: { session } } = await supabaseClient.auth.getSession();
-        if (session) {
-            const user = session.user;
-            appState.user = {
-                id: user.id,
-                email: user.email,
-                user_metadata: user.user_metadata
-            };
-            await loadUserData();
-            appState.currentScreen = appState.userData.account_type === 'seller' ? 'sellerDashboardScreen' :
-                                     (appState.userData.account_type === 'delivery' ? 'deliveryDashboardScreen' :
-                                     'homeScreen');
-        } else {
-            appState.currentScreen = appState.location ? 'homeScreen' : 'locationScreen';
+        // تحميل البيانات حسب التبويب
+        switch (tabId) {
+            case 'dashboard': if (typeof refreshFounderDashboard === 'function') refreshFounderDashboard(); break;
+            case 'deliveries': if (typeof loadDeliveriesTable === 'function') loadDeliveriesTable(); break;
+            case 'customers': if (typeof loadCustomersTable === 'function') loadCustomersTable(); break;
+            case 'sellers': if (typeof loadSellersTable === 'function') loadSellersTable(); break;
+            case 'products': if (typeof loadProductsTableAdmin === 'function') loadProductsTableAdmin(); break;
+            case 'properties': if (typeof loadPropertiesTable === 'function') loadPropertiesTable(); break;
+            case 'services': if (typeof loadServicesTableAdmin === 'function') loadServicesTableAdmin(); break;
+            case 'orders': if (typeof loadOrdersTableAdmin === 'function') loadOrdersTableAdmin(); break;
+            case 'reports': if (typeof loadReportsTable === 'function') loadReportsTable(); break;
+            case 'logs': if (typeof loadLogsTable === 'function') loadLogsTable(); break;
+            case 'settings': if (typeof loadSettingsForm === 'function') loadSettingsForm(); break;
         }
+    };
 
-        // ---- تحميل البيانات الأساسية ----
-        await loadProductsFromDB();
-        loadFeaturedProducts();
-        loadMarketProducts();
-        loadServices();
-        loadCart();
-        await updateCartBadgeFromDB();
-
-        // ---- إظهار الشاشة المناسبة ----
-        setTimeout(() => {
-            document.getElementById('loadingScreen').style.display = 'none';
-            showScreen(appState.currentScreen);
-            if (appState.location) { updateWelcomeLocation(); updateProfileLocation(); }
-            toggleLoginMenu(!!appState.user);
-            const isSeller = appState.userData?.account_type === 'seller';
-            const isDelivery = appState.userData?.account_type === 'delivery';
-            const isFounder = appState.userData?.account_type === 'founder';
-            toggleSellerMenuItem(isSeller);
-            toggleDeliveryMenuItem(isDelivery);
-            toggleFounderMenuItem(isFounder);
-            addInputInteractions();
-        }, 1500);
-
-        // ========== مستمعات الأحداث للأزرار (الحل الأساسي) ==========
-        // 1. زر تسجيل الدخول بالبريد
-        const loginBtn = document.getElementById('loginBtn');
-        if (loginBtn) {
-            loginBtn.addEventListener('click', function(e) {
-                e.preventDefault();   // منع أي سلوك افتراضي
-                console.log('🟢 زر تسجيل الدخول تم الضغط عليه');
-                if (typeof signInWithEmail === 'function') {
-                    signInWithEmail();
-                } else {
-                    console.error('❌ الدالة signInWithEmail غير معرفة');
-                    showToast('حدث خطأ في النظام، حاول مرة أخرى', 'error');
-                }
-            });
-        } else {
-            console.warn('⚠️ لم يتم العثور على الزر loginBtn');
-        }
-
-        // 2. زر إنشاء حساب
-        const registerBtn = document.getElementById('registerBtn');
-        if (registerBtn) {
-            registerBtn.addEventListener('click', function(e) {
-                e.preventDefault();
-                console.log('🟢 زر إنشاء حساب تم الضغط عليه');
-                if (typeof signUpWithEmail === 'function') {
-                    signUpWithEmail();
-                } else {
-                    console.error('❌ الدالة signUpWithEmail غير معرفة');
-                    showToast('حدث خطأ في النظام، حاول مرة أخرى', 'error');
-                }
-            });
-        } else {
-            console.warn('⚠️ لم يتم العثور على الزر registerBtn');
-        }
-
-        // ========== إظهار/إخفاء حقل مركز المندوب عند تغيير نوع الحساب (الخيار التاني) ==========
-        const registerAccountType = document.getElementById('registerAccountType');
-        const deliveryCenterField = document.getElementById('deliveryCenterField');
-        const deliveryCenterSelect = document.getElementById('deliveryCenterSelect');
-
-        // ========== بحث المتجر (FIX: ربط شريط البحث بالدالة) ==========
-        const marketSearchInput = document.getElementById('marketSearchInput');
-        const clearSearchBtn = document.getElementById('clearSearch');
-        if (marketSearchInput) {
-            marketSearchInput.addEventListener('input', () => {
-                const q = (marketSearchInput.value || '').trim();
-                if (clearSearchBtn) clearSearchBtn.style.display = q ? 'block' : 'none';
-                if (typeof filterMarketProducts === 'function') filterMarketProducts(q);
-            });
-        }
-
-
-        function syncDeliveryCenterVisibility() {
-            if (!registerAccountType || !deliveryCenterField) return;
-            const isDelivery = registerAccountType.value === 'delivery';
-            deliveryCenterField.style.display = isDelivery ? 'block' : 'none';
-
-            // إذا المستخدم رجع/تبدّل نوعه، نضمن الـ select يكون جاهز
-            if (isDelivery && deliveryCenterSelect) {
-                deliveryCenterSelect.disabled = false;
-            }
-        }
-
-        if (registerAccountType) {
-            registerAccountType.addEventListener('change', syncDeliveryCenterVisibility);
-            // تزامن أولي عند فتح الصفحة
-            syncDeliveryCenterVisibility();
-        }
-
-
-        // 3. زر Google
-        const googleBtn = document.getElementById('googleLoginBtn');
-        if (googleBtn) {
-            googleBtn.addEventListener('click', function(e) {
-                e.preventDefault();
-                console.log('🟢 زر Google تم الضغط عليه');
-                if (typeof signInWithGoogle === 'function') {
-                    signInWithGoogle();
-                } else {
-                    console.error('❌ الدالة signInWithGoogle غير معرفة');
-                    showToast('حدث خطأ في النظام، حاول مرة أخرى', 'error');
-                }
-            });
-        } else {
-            console.warn('⚠️ لم يتم العثور على الزر googleLoginBtn');
-        }
-
-        // ========== روابط التبديل بين تسجيل الدخول والتسجيل ==========
-        document.getElementById('showRegisterLink')?.addEventListener('click', function(e) {
-            e.preventDefault();
-            showScreen('registerScreen');
-        });
-        document.getElementById('showLoginLink')?.addEventListener('click', function(e) {
-            e.preventDefault();
-            showScreen('loginScreen');
-        });
-
-        // ========== حفظ الموقع ==========
-        document.getElementById('saveLocationBtn')?.addEventListener('click', saveLocation);
-
-        // ========== تحديث القرى عند تغيير المركز ==========
-        const centerSelect = document.getElementById('centerSelect');
-        const villageSelect = document.getElementById('villageSelect');
-        if (centerSelect && villageSelect) {
-            // عند تغيير المركز: أعد تعبئة القرى
-            centerSelect.addEventListener('change', () => {
-                const center = centerSelect.value;
-                if (!center) {
-                    villageSelect.innerHTML = '<option value="">اختر القرية</option>';
-                    villageSelect.disabled = true;
-                    return;
-                }
-                villageSelect.disabled = false;
-                loadVillagesForCenter(center, '');
-            });
-
-            // إذا كان المركز محفوظ مسبقاً في appState.location: فعّل التحميل
-            if (appState.location?.center) {
-                centerSelect.value = appState.location.center;
-                villageSelect.disabled = false;
-                loadVillagesForCenter(appState.location.center, appState.location.village || '');
-            } else {
-                villageSelect.disabled = true;
-            }
-        }
-
-        // ========== مستمع حدث المصادقة (لتحديث الواجهة تلقائياً) ==========
-        supabaseClient.auth.onAuthStateChange(async (event, session) => {
-            if (event === 'SIGNED_IN' && session) {
-                const user = session.user;
-                appState.user = {
-                    id: user.id,
-                    email: user.email,
-                    user_metadata: user.user_metadata
-                };
-
-                const pendingType = sessionStorage.getItem('pendingAccountType');
-                if (pendingType) {
-                    try {
-                        await supabaseClient.from('user_data').upsert({
-                            id: user.id,
-                            account_type: pendingType,
-                            center: user.user_metadata?.center || '',
-                            status: user.user_metadata?.status || 'approved'
-                        });
-                    } catch (e) {
-                        console.warn('فشل تحديث user_data:', e);
-                    }
-                    sessionStorage.removeItem('pendingAccountType');
-                }
-
-                await loadUserData();
-                toggleLoginMenu(true);
-                const isSeller = appState.userData?.account_type === 'seller';
-                const isDelivery = appState.userData?.account_type === 'delivery';
-                const isFounder = appState.userData?.account_type === 'founder';
-                toggleSellerMenuItem(isSeller);
-                toggleDeliveryMenuItem(isDelivery);
-                toggleFounderMenuItem(isFounder);
-                await updateCartBadgeFromDB();
-
-                if (isSeller) showScreen('sellerDashboardScreen');
-                else if (isDelivery) showScreen('deliveryDashboardScreen');
-                else showScreen('homeScreen');
-                showToast('تم تسجيل الدخول بنجاح', 'success');
-                showBearReaction(true);
-
-            } else if (event === 'SIGNED_OUT') {
-                appState.user = null;
-                appState.userData = {};
-                toggleLoginMenu(false);
-                toggleSellerMenuItem(false);
-                toggleDeliveryMenuItem(false);
-                toggleFounderMenuItem(false);
-                updateUserInfo(true);
-                await loadCart();
-                await updateCartBadgeFromDB();
-                showScreen('homeScreen');
-                showToast('تم تسجيل الخروج', 'success');
-            }
-        });
-
-        // ========== تحقق من بارامترات URL ==========
-        const params = new URLSearchParams(window.location.search);
-        const storeParam = params.get('store');
-        if (storeParam) {
-            console.log('🟢 store param detected:', storeParam);
-            setTimeout(() => {
-                if (typeof showStorePage === 'function') {
-                    showStorePage(storeParam);
-                } else {
-                    console.error('❌ showStorePage is not defined');
-                    showToast('تعذر فتح المتجر تلقائياً', 'error');
-                }
-            }, 500);
-        }
-        checkFounderParam();
-    });
+    // استدعاء التوابع التي قد تكون غير معرفة في البداية
+    console.log('✅ تم تحميل جميع الدوال.');
 </script>
 </body>
 </html>

@@ -18,8 +18,18 @@
     <div class="loading" id="loadingScreen" style="display:none;"><div class="loading-spinner"></div><p>جاري التحميل...</p></div>
 
     <div class="screen active" id="productDetailScreen">
-        <div class="app-header"><div class="header-content"><div class="header-left"><button class="back-btn active" onclick="window.location.href='index.html'"><i class="fas fa-arrow-right"></i></button><div class="header-title">تفاصيل المنتج</div></div><div class="header-actions"><button class="header-icon" onclick="window.location.href='cart.html'"><i class="fas fa-shopping-cart"></i></button></div></div></div>
-        <div class="products-section" style="padding-top:20px;"><div id="productDetailContent"><p style="text-align:center; padding:50px;">جاري تحميل بيانات المنتج...</p></div></div>
+        <div class="app-header">
+            <div class="header-content">
+                <div class="header-left">
+                    <button class="back-btn active" onclick="window.location.href='index.html'"><i class="fas fa-arrow-right"></i></button>
+                    <div class="header-title">تفاصيل المنتج</div>
+                </div>
+                <div class="header-actions">
+                    <button class="header-icon" onclick="window.location.href='cart.html'"><i class="fas fa-shopping-cart"></i></button>
+                </div>
+            </div>
+        </div>
+        <div id="productDetailContent" style="background: var(--sand); min-height: 80vh;"></div>
     </div>
 
     <div class="loading-overlay" id="loadingOverlay"><div class="loading-spinner-large"></div></div>
